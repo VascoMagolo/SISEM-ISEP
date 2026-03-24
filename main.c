@@ -8,6 +8,8 @@
 #include "lib/uart.h"
 
 volatile bool led_blinking = false;
+volatile uint16_t potentiometer_value = 0;
+
 
 void interrup() {
   if (led_blinking) {
@@ -47,17 +49,20 @@ int main(void) {
 
   ADC_MEASUREMENT_StartConversion(&ADC_POTENTIOMETER);
 
-  uint16_t potentiometer_value = 0;
+  potentiometer_value = 0;
   bool btn_pressed_prev = false;
 
   while (1U) {
     update_pwm_from_potentiometer(&potentiometer_value);
     check_button_toggle(&btn_pressed_prev);
 
-    char uart_input;
+    if (!UART_IsRXFIFOEmpty(&UART_0)) {
 
-    if (uart_receive_str(&UART_0, &uart_input, 1)) {
-      cli_process_command(&UART_0, uart_input, potentiometer_value);
-    }
+          // Como sabemos que há dados, a leitura é instantânea
+          char uart_input = (char)uart_read_byte(&UART_0);
+
+          // Processa o comando
+          cli_process_command(&UART_0, uart_input, potentiometer_value);
+        }
   }
 }
