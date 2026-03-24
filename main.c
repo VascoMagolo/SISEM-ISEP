@@ -9,7 +9,7 @@
 
 volatile bool led_blinking = false;
 volatile uint16_t potentiometer_value = 0;
-
+volatile bool micrium_btn_request = false;
 
 void interrup() {
   if (led_blinking) {
@@ -19,19 +19,24 @@ void interrup() {
   }
 }
 
-void update_pwm_from_potentiometer(uint16_t* pot_val) {
+void update_pwm_from_potentiometer(volatile uint16_t* pot_val) {
   *pot_val = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
   int duty_cycle = (int)(*pot_val) * 10000 / 255;
   PWM_SetDutyCycle(&PWM_0, duty_cycle);
 }
 
 void check_button_toggle(bool* prev_state) {
-  bool btn_pressed = DIGITAL_IO_GetInput(&DIGITAL_IO_LED) == 1;
+  bool physical_btn_pressed = DIGITAL_IO_GetInput(&DIGITAL_IO_LED) == 1;
 
-  if (btn_pressed && !(*prev_state)) {
+  if (physical_btn_pressed && !(*prev_state)) {
     led_blinking = !led_blinking;
   }
-  *prev_state = btn_pressed;
+  *prev_state = physical_btn_pressed;
+
+  if (micrium_btn_request == true) {
+    led_blinking = !led_blinking;
+    micrium_btn_request = false;
+  }
 }
 
 int main(void) {
@@ -57,12 +62,9 @@ int main(void) {
     check_button_toggle(&btn_pressed_prev);
 
     if (!UART_IsRXFIFOEmpty(&UART_0)) {
+      char uart_input = (char)uart_read_byte(&UART_0);
 
-          // Como sabemos que há dados, a leitura é instantânea
-          char uart_input = (char)uart_read_byte(&UART_0);
-
-          // Processa o comando
-          cli_process_command(&UART_0, uart_input, potentiometer_value);
-        }
+      cli_process_command(&UART_0, uart_input, potentiometer_value);
+    }
   }
 }

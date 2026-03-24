@@ -5,11 +5,11 @@
       <symbolfile Filepath="..\Debug\tarefa_a.elf" ExternallyAdded="false" Core_Identifier="Core0" Device_Identifier="Device0" FileType="ELF_File" />
     </symbolfiles>
   </symbolbrowser>
-  <screens SelectedScreenId="DataScreen3">
-    <screen RegisteredName="DataScreen3" ScreenHeader="DataScreen1" ScreenType="DataScreen" />
+  <screens SelectedScreenId="DataScreen2">
+    <screen RegisteredName="DataScreen2" ScreenHeader="DataScreen1" ScreenType="DataScreen" />
   </screens>
   <nodes>
-    <node ScreenId="DataScreen3" NodeId="CustomDiagramNode3" OffsetX="210" OffsetY="500" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="600" Height="350" ZIndex="2" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
+    <node ScreenId="DataScreen2" NodeId="CustomDiagramNode1" OffsetX="210" OffsetY="500" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="600" Height="350" ZIndex="0" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
       <innercontent>
         <content ControlType="TBChart" Type="TBGraph">
           <definitions Width="600" Height="350" TypeOfUpdateStyle="Sweep" MaxNumSamples="100" EraseTrace="false" XAxisFrom="0" XAxisTo="10" PrimaryYAxisFrom="0" PrimaryYAxisTo="100" ScalingFactor="1" ScalingOffset="0" ScalingFormat="" DecimalPlaces="0" LeadingZeroes="0" UpdateRateInMs="Ms50" />
@@ -25,7 +25,7 @@
         <symbol path="potentiometer_value" IsAnArrayElement="false" ElementIndex="0" IsCustomSymbol="false" Mask_Enabled="false" Mask_Start_Bit="0" Mask_End_Bit="0" />
       </symbols>
     </node>
-    <node ScreenId="DataScreen3" NodeId="CustomDiagramNode4" OffsetX="950" OffsetY="652.5" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="115" Height="45" ZIndex="3" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
+    <node ScreenId="DataScreen2" NodeId="CustomDiagramNode2" OffsetX="915" OffsetY="652.5" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="115" Height="45" ZIndex="0" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
       <innercontent>
         <content ControlType="ToggleButton" Type="ToggleButton">
           <definitions Width="115" Height="45" ButtonValue="1" ToggleOnValue="1" ToggleOffValue="0" ButtonLabel="" IsButtonChecked="false" LabelOffValue="LED ESTATICO" LabelOnValue="LED PISCA" FontColor="#FF000000" FontFamily="Segoe UI" FontSize="12" ShowButtonTypeLabel="true" OnColor="#FF90EE90" OffColor="#FFF08080" />
@@ -40,8 +40,8 @@
   <explorer>
     <content>
       <nodes>
-        <node IsEnable="true" Name="Project1" NodeType="Project" ScreenType="None" UniqueID="Project3">
-          <node IsEnable="true" Name="DataScreen1" NodeType="Screen" ScreenType="DataScreen" UniqueID="DataScreen3" />
+        <node IsEnable="true" Name="Project1" NodeType="Project" ScreenType="None" UniqueID="Project2">
+          <node IsEnable="true" Name="DataScreen1" NodeType="Screen" ScreenType="DataScreen" UniqueID="DataScreen2" />
         </node>
       </nodes>
     </content>
@@ -133,7 +133,7 @@
           <TabOrderIndex>-1</TabOrderIndex>
           <PreviousContainerDesiredSize>
             <Width>270</Width>
-            <Height>860</Height>
+            <Height>861</Height>
           </PreviousContainerDesiredSize>
           <PreviousDesiredWidthInDockedMode>270</PreviousDesiredWidthInDockedMode>
           <PreviousDesiredHeightInDockedMode>142</PreviousDesiredHeightInDockedMode>
@@ -209,10 +209,10 @@
           <TabOrderIndex>-1</TabOrderIndex>
           <PreviousContainerDesiredSize>
             <Width>270</Width>
-            <Height>860</Height>
+            <Height>861</Height>
           </PreviousContainerDesiredSize>
           <PreviousDesiredWidthInDockedMode>270</PreviousDesiredWidthInDockedMode>
-          <PreviousDesiredHeightInDockedMode>426</PreviousDesiredHeightInDockedMode>
+          <PreviousDesiredHeightInDockedMode>427</PreviousDesiredHeightInDockedMode>
           <Name>toolboxMainView</Name>
           <State>Dock</State>
           <NoHeader>false</NoHeader>
@@ -285,7 +285,7 @@
           <TabOrderIndex>-1</TabOrderIndex>
           <PreviousContainerDesiredSize>
             <Width>270</Width>
-            <Height>860</Height>
+            <Height>861</Height>
           </PreviousContainerDesiredSize>
           <PreviousDesiredWidthInDockedMode>270</PreviousDesiredWidthInDockedMode>
           <PreviousDesiredHeightInDockedMode>284</PreviousDesiredHeightInDockedMode>
@@ -304,7 +304,7 @@
           <CanDock>true</CanDock>
           <CanClose>false</CanClose>
           <IsSelectedTab>true</IsSelectedTab>
-          <IsActiveWindow>true</IsActiveWindow>
+          <IsActiveWindow>false</IsActiveWindow>
           <WindowRect />
           <TabGroupName>5150941</TabGroupName>
           <IsTabGroupOwner>false</IsTabGroupOwner>
@@ -365,7 +365,7 @@
           </PreviousContainerDesiredSize>
           <PreviousDesiredWidthInDockedMode>0</PreviousDesiredWidthInDockedMode>
           <PreviousDesiredHeightInDockedMode>0</PreviousDesiredHeightInDockedMode>
-          <Name>DataScreen3</Name>
+          <Name>DataScreen2</Name>
           <State>Document</State>
           <NoHeader>false</NoHeader>
           <SideDocked>Left</SideDocked>
@@ -380,7 +380,7 @@
           <CanDock>false</CanDock>
           <CanClose>false</CanClose>
           <IsSelectedTab>false</IsSelectedTab>
-          <IsActiveWindow>false</IsActiveWindow>
+          <IsActiveWindow>true</IsActiveWindow>
           <WindowRect />
           <TabGroupName />
           <IsTabGroupOwner>false</IsTabGroupOwner>
