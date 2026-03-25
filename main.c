@@ -9,7 +9,7 @@
 
 volatile bool led_blinking = false;
 volatile uint16_t potentiometer_value = 0;
-volatile bool micrium_btn_request = false;
+volatile bool micrium_btn_pressed = false;
 
 void interrup() {
   if (led_blinking) {
@@ -20,23 +20,26 @@ void interrup() {
 }
 
 void update_pwm_from_potentiometer(volatile uint16_t* pot_val) {
+
   *pot_val = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
+
   int duty_cycle = (int)(*pot_val) * 10000 / 255;
   PWM_SetDutyCycle(&PWM_0, duty_cycle);
 }
 
 void check_button_toggle(bool* prev_state) {
-  bool physical_btn_pressed = DIGITAL_IO_GetInput(&DIGITAL_IO_LED) == 1;
+  bool physical_btn_pressed = (DIGITAL_IO_GetInput(&DIGITAL_IO_BTN) == 1);
 
-  if (physical_btn_pressed && !(*prev_state)) {
-    led_blinking = !led_blinking;
+  bool physical_triggered = physical_btn_pressed && !(*prev_state);
+
+  if (physical_triggered) {
+	  uart_printf(&UART_0, "clicado\r\n");
+      micrium_btn_pressed = !micrium_btn_pressed;
   }
+
+  led_blinking = micrium_btn_pressed;
+
   *prev_state = physical_btn_pressed;
-
-  if (micrium_btn_request == true) {
-    led_blinking = !led_blinking;
-    micrium_btn_request = false;
-  }
 }
 
 int main(void) {

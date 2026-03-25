@@ -12,10 +12,10 @@
     <node ScreenId="DataScreen2" NodeId="CustomDiagramNode1" OffsetX="210" OffsetY="500" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="600" Height="350" ZIndex="0" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
       <innercontent>
         <content ControlType="TBChart" Type="TBGraph">
-          <definitions Width="600" Height="350" TypeOfUpdateStyle="Sweep" MaxNumSamples="100" EraseTrace="false" XAxisFrom="0" XAxisTo="10" PrimaryYAxisFrom="0" PrimaryYAxisTo="100" ScalingFactor="1" ScalingOffset="0" ScalingFormat="" DecimalPlaces="0" LeadingZeroes="0" UpdateRateInMs="Ms50" />
+          <definitions Width="600" Height="350" TypeOfUpdateStyle="Sweep" MaxNumSamples="5000" EraseTrace="false" XAxisFrom="0" XAxisTo="10" PrimaryYAxisFrom="0" PrimaryYAxisTo="300" ScalingFactor="1" ScalingOffset="0" ScalingFormat="" DecimalPlaces="0" LeadingZeroes="0" UpdateRateInMs="Ms50" />
           <symbolseries>
             <serie Path="potentiometer_value">
-              <seriesmodel EraseTrace="false" MaxNumSamples="100" TypeOfUpdateStyle="Sweep" XAxisOffset="0" />
+              <seriesmodel EraseTrace="false" MaxNumSamples="5000" TypeOfUpdateStyle="Sweep" XAxisOffset="0" />
               <seriesview LineStroke="#FFFF0000" LineStrokeThickness="2" />
             </serie>
           </symbolseries>
@@ -25,14 +25,14 @@
         <symbol path="potentiometer_value" IsAnArrayElement="false" ElementIndex="0" IsCustomSymbol="false" Mask_Enabled="false" Mask_Start_Bit="0" Mask_End_Bit="0" />
       </symbols>
     </node>
-    <node ScreenId="DataScreen2" NodeId="CustomDiagramNode2" OffsetX="915" OffsetY="652.5" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="115" Height="45" ZIndex="0" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
+    <node ScreenId="DataScreen2" NodeId="CustomDiagramNode7" OffsetX="1056" OffsetY="669" AllowMove="true" AllowResize="true" AllowRotate="true" AllowSelect="true" IsInRuntimeMode="false" Width="100" Height="27" ZIndex="6" IsLocked="false" RotateAngle="0" Pivot="0.5,0.5" UpdateWhenVisible="true" IsWritableControl="false" WritableValue="0" IsDrawingShape="false" ShapeTypeStr="" RibbonTool="None">
       <innercontent>
-        <content ControlType="ToggleButton" Type="ToggleButton">
-          <definitions Width="115" Height="45" ButtonValue="1" ToggleOnValue="1" ToggleOffValue="0" ButtonLabel="" IsButtonChecked="false" LabelOffValue="LED ESTATICO" LabelOnValue="LED PISCA" FontColor="#FF000000" FontFamily="Segoe UI" FontSize="12" ShowButtonTypeLabel="true" OnColor="#FF90EE90" OffColor="#FFF08080" />
+        <content ControlType="IPhoneSwitch" Type="iPhoneSwitch">
+          <definitions Width="100" Height="27" ButtonValue="1" ToggleOnValue="1" ToggleOffValue="0" ButtonLabel="" IsButtonChecked="true" LabelOffValue="" LabelOnValue="" FontColor="#FF000000" FontFamily="Segoe UI" FontSize="12" />
         </content>
       </innercontent>
       <symbols>
-        <symbol path="led_blinking" IsAnArrayElement="false" ElementIndex="0" IsCustomSymbol="false" Mask_Enabled="false" Mask_Start_Bit="0" Mask_End_Bit="0" />
+        <symbol path="micrium_btn_pressed" IsAnArrayElement="false" ElementIndex="0" IsCustomSymbol="false" Mask_Enabled="false" Mask_Start_Bit="0" Mask_End_Bit="0" />
       </symbols>
     </node>
   </nodes>
@@ -60,7 +60,7 @@
             <Height>0</Height>
           </PreviousContainerDesiredSize>
           <PreviousDesiredWidthInDockedMode>1642</PreviousDesiredWidthInDockedMode>
-          <PreviousDesiredHeightInDockedMode>360</PreviousDesiredHeightInDockedMode>
+          <PreviousDesiredHeightInDockedMode>201</PreviousDesiredHeightInDockedMode>
           <Name>usrSymbolBrowser</Name>
           <State>Dock</State>
           <NoHeader>false</NoHeader>
@@ -69,7 +69,7 @@
           <TargetDocked />
           <TargetFloating />
           <DesiredWidthInDockedMode>1642</DesiredWidthInDockedMode>
-          <DesiredHeightInDockedMode>360</DesiredHeightInDockedMode>
+          <DesiredHeightInDockedMode>201</DesiredHeightInDockedMode>
           <DesiredWidthInFloatingMode>90</DesiredWidthInFloatingMode>
           <DesiredHeightInFloatingMode>360</DesiredHeightInFloatingMode>
           <NoDock>false</NoDock>
@@ -78,7 +78,7 @@
           <IsSelectedTab>false</IsSelectedTab>
           <IsActiveWindow>false</IsActiveWindow>
           <WindowRect />
-          <TabGroupName>38326926</TabGroupName>
+          <TabGroupName>4319012</TabGroupName>
           <IsTabGroupOwner>false</IsTabGroupOwner>
           <SideTabOrder>0</SideTabOrder>
           <IndexInDockMode>4</IndexInDockMode>
@@ -154,10 +154,10 @@
           <IsSelectedTab>false</IsSelectedTab>
           <IsActiveWindow>false</IsActiveWindow>
           <WindowRect />
-          <TabGroupName>19853506</TabGroupName>
+          <TabGroupName>61552586</TabGroupName>
           <IsTabGroupOwner>false</IsTabGroupOwner>
           <SideTabOrder>0</SideTabOrder>
-          <IndexInDockMode>2</IndexInDockMode>
+          <IndexInDockMode>3</IndexInDockMode>
           <IndexInFloatMode>3</IndexInFloatMode>
           <TabOrderInDockMode>0</TabOrderInDockMode>
           <TabOrderInFloatMode>0</TabOrderInFloatMode>
@@ -171,7 +171,7 @@
           <WayOfTDIGroup />
           <DockForSide>Left</DockForSide>
           <PreviousIndexInDockMode>0</PreviousIndexInDockMode>
-          <PreviousSideInDockMode>Top</PreviousSideInDockMode>
+          <PreviousSideInDockMode>Bottom</PreviousSideInDockMode>
           <DoShift>false</DoShift>
           <SideRelativetoContainer>Left</SideRelativetoContainer>
           <TabParent />
@@ -230,10 +230,10 @@
           <IsSelectedTab>false</IsSelectedTab>
           <IsActiveWindow>false</IsActiveWindow>
           <WindowRect />
-          <TabGroupName>53858575</TabGroupName>
+          <TabGroupName>19703558</TabGroupName>
           <IsTabGroupOwner>false</IsTabGroupOwner>
           <SideTabOrder>0</SideTabOrder>
-          <IndexInDockMode>3</IndexInDockMode>
+          <IndexInDockMode>1</IndexInDockMode>
           <IndexInFloatMode>2</IndexInFloatMode>
           <TabOrderInDockMode>0</TabOrderInDockMode>
           <TabOrderInFloatMode>0</TabOrderInFloatMode>
@@ -247,7 +247,7 @@
           <WayOfTDIGroup />
           <DockForSide>Left</DockForSide>
           <PreviousIndexInDockMode>0</PreviousIndexInDockMode>
-          <PreviousSideInDockMode>Top</PreviousSideInDockMode>
+          <PreviousSideInDockMode>Left</PreviousSideInDockMode>
           <DoShift>false</DoShift>
           <SideRelativetoContainer>Left</SideRelativetoContainer>
           <TabParent />
@@ -292,7 +292,7 @@
           <Name>infineonSelectorView</Name>
           <State>Dock</State>
           <NoHeader>false</NoHeader>
-          <SideDocked>Bottom</SideDocked>
+          <SideDocked>Top</SideDocked>
           <SideFloating>Left</SideFloating>
           <TargetDocked>workspaceExplorerMainView</TargetDocked>
           <TargetFloating />
@@ -304,12 +304,12 @@
           <CanDock>true</CanDock>
           <CanClose>false</CanClose>
           <IsSelectedTab>true</IsSelectedTab>
-          <IsActiveWindow>false</IsActiveWindow>
+          <IsActiveWindow>true</IsActiveWindow>
           <WindowRect />
-          <TabGroupName>5150941</TabGroupName>
+          <TabGroupName>52484326</TabGroupName>
           <IsTabGroupOwner>false</IsTabGroupOwner>
           <SideTabOrder>0</SideTabOrder>
-          <IndexInDockMode>1</IndexInDockMode>
+          <IndexInDockMode>2</IndexInDockMode>
           <IndexInFloatMode>1</IndexInFloatMode>
           <TabOrderInDockMode>0</TabOrderInDockMode>
           <TabOrderInFloatMode>0</TabOrderInFloatMode>
@@ -380,7 +380,7 @@
           <CanDock>false</CanDock>
           <CanClose>false</CanClose>
           <IsSelectedTab>false</IsSelectedTab>
-          <IsActiveWindow>true</IsActiveWindow>
+          <IsActiveWindow>false</IsActiveWindow>
           <WindowRect />
           <TabGroupName />
           <IsTabGroupOwner>false</IsTabGroupOwner>
