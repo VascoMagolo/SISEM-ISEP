@@ -33,7 +33,6 @@ void check_button_toggle(bool* prev_state) {
   bool physical_triggered = physical_btn_pressed && !(*prev_state);
 
   if (physical_triggered) {
-	  uart_printf(&UART_0, "clicado\r\n");
       micrium_btn_pressed = !micrium_btn_pressed;
   }
 
@@ -52,6 +51,13 @@ int main(void) {
     return 1;
   }
 
+  lcd_init(&I2C_MASTER_0);
+  lcd_clear(&I2C_MASTER_0);
+  lcd_set_cursor(&I2C_MASTER_0, 0, 0);
+  lcd_send_string(&I2C_MASTER_0, "XMC4200 Ready!");
+  lcd_set_cursor(&I2C_MASTER_0, 1, 0);
+  lcd_send_string(&I2C_MASTER_0, "Group 3");
+
   cli_print_header(&UART_0);
   cli_print_menu(&UART_0);
 
@@ -61,6 +67,8 @@ int main(void) {
   bool btn_pressed_prev = false;
 
   while (1U) {
+	WATCHDOG_Service();
+
     update_pwm_from_potentiometer(&potentiometer_value);
     check_button_toggle(&btn_pressed_prev);
 

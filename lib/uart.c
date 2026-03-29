@@ -43,6 +43,9 @@ uint32_t uart_read_line(const UART_t* const handler, char* buffer, uint32_t max_
 
     buffer[count] = c;
     count++;
+
+    while (UART_IsTXFIFOFull(handler)) {}
+	UART_TransmitWord(handler, (uint8_t)c);
   }
 
   buffer[count] = '\0';

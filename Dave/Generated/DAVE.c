@@ -106,6 +106,16 @@ __WEAK DAVE_STATUS_t DAVE_Init(void)
   {
 	 /**  Initialization of PWM APP instance PWM_0 */
 	 init_status = (DAVE_STATUS_t)PWM_Init(&PWM_0); 
+   } 
+  if (init_status == DAVE_STATUS_SUCCESS)
+  {
+	 /**  Initialization of WATCHDOG APP instance WATCHDOG_0 */
+	 init_status = (DAVE_STATUS_t)WATCHDOG_Init(&WATCHDOG_0); 
+   } 
+  if (init_status == DAVE_STATUS_SUCCESS)
+  {
+	 /**  Initialization of I2C_MASTER APP instance I2C_MASTER_0 */
+	 init_status = (DAVE_STATUS_t)I2C_MASTER_Init(&I2C_MASTER_0); 
    }  
   return init_status;
 } /**  End of function DAVE_Init */

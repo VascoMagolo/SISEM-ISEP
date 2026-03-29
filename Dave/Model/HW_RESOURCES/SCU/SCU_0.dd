@@ -105,5 +105,50 @@
     <resourcesList name="ccucon_gsc" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/ccucon/gsc40"/>
     <resourcesList name="gsc_enable" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/gsc40_enable"/>
   </provided>
+  <provided xsi:type="ResourceModel:ResourceGroup" name="PREWARN" URI="http://resources/42.0.1/peripheral/scu/0/gcu/interrupt/prewarn">
+    <upwardMapList xsi:type="ResourceModel:HWResource" href="../../APPS/WATCHDOG/v4_0_16/WATCHDOG_0.app#//@hwResources.1"/>
+    <resourcesList name="srstat_int" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/srstat/prwarn"/>
+    <resourcesList name="rawsr_int" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/rawsr/prwarn"/>
+    <resourcesList name="srclr_int" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/srclr/prwarn"/>
+    <resourcesList name="srset_int" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/srset/prwarn"/>
+    <resourcesList name="srmsk_int" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/srmsk/prwarn"/>
+    <resourcesList name="nmireqen_prwarn" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/nmireqen/prwarn"/>
+    <resourcesList name="wdt_pre_warn" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/wdt_pre_warn"/>
+    <resourcesList name="int" requiredResourceUri="http://resources/42.0.1/peripheral/scu/0/prwarn_int"/>
+  </provided>
+  <provided xsi:type="ResourceModel:RegisterParameter" name="NMIREQEN" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen" value="00000000" toolTipHelpDescription="SCU Service Request Mask" defaultValue="00000000" accessPermission="rw" addressOffset="0x88" resetValue="00000000" resetMask="0xFFFFFFFF">
+    <bitFields name="PRWARN" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/prwarn" value="0" toolTipHelpDescription="Promote Pre-Warning Interrupt Request to NMI Request" defaultValue="0" startPos="0" stopPos="0" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+    <bitFields name="PI" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/pi" value="0" toolTipHelpDescription="Promote RTC Periodic Interrupt request to NMI Request" defaultValue="0" startPos="1" stopPos="1" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+    <bitFields name="AI" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/ai" value="0" toolTipHelpDescription="Promote RTC Alarm Interrupt Request to NMI Request" defaultValue="0" startPos="2" stopPos="2" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+    <bitFields name="ERU00" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/eru00" value="0" toolTipHelpDescription="Promote Channel 0 Interrupt of ERU0 Request to NMI Request" defaultValue="0" startPos="16" stopPos="16" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+    <bitFields name="ERU01" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/eru01" value="0" toolTipHelpDescription="Promote Channel 1 Interrupt of ERU0 Request to NMI Request" defaultValue="0" startPos="17" stopPos="17" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+    <bitFields name="ERU02" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/eru02" value="0" toolTipHelpDescription="Promote Channel 2 Interrupt of ERU0 Request to NMI Request" defaultValue="0" startPos="18" stopPos="18" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+    <bitFields name="ERU03" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/eru03" value="0" toolTipHelpDescription="Promote Channel 3 Interrupt of ERU0 Request to NMI Request" defaultValue="0" startPos="19" stopPos="19" accessPermission="rw" maxValue="1" minValue="0">
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+      <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+    </bitFields>
+  </provided>
+  <provided xsi:type="ResourceModel:BitField" name="PRWARN" URI="http://resources/42.0.1/peripheral/scu/0/nmireqen/prwarn" value="0" toolTipHelpDescription="Promote Pre-Warning Interrupt Request to NMI Request" defaultValue="0" startPos="0" stopPos="0" accessPermission="rw" maxValue="1" minValue="0">
+    <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b0" description="Disabled"/>
+    <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b1" description="Enabled"/>
+  </provided>
   <addressBlock offset="0x0" size="0x4000" usage="registers"/>
 </ResourceModel:Peripheral>
