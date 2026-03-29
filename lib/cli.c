@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 #include "DAVE.h"
 #include "cli.h"
+#include "i2c.h"
 #include "uart.h"
 
 // bypass confusing TIMER api units (1 unit = 10ns)
@@ -32,7 +34,7 @@ void cli_process_command(const UART_t* const handler, char cmd,
 		lcd_set_cursor(&I2C_MASTER_0, 1, 0); // row 1 col 0
 		char data_lcd[16] = { 0 };
 		sprintf(data_lcd, "Value: %u", current_adc_val);
-		lcd_send_string(data_lcd);
+		lcd_send_string(&I2C_MASTER_0, data_lcd);
 
 		uart_printf(handler, "\r\nADC Value: %u\r\n", current_adc_val);
 		cli_print_menu(handler);
