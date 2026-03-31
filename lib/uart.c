@@ -33,17 +33,17 @@ uint32_t uart_read_line(const UART_t* const handler, char* buffer, uint32_t max_
   uint32_t count = 0;
   char c;
 
-  while (count < (max_length - 1)) {
+	while (1) {
     c = (char)uart_read_byte(handler);
 
     if (c == '\n' || c == '\r') {
       if (count == 0) continue;
       break;
     }
-
-    buffer[count] = c;
-    count++;
-
+		if (count < (max_length - 1)) {
+			buffer[count] = c;
+			count++;
+		}
     while (UART_IsTXFIFOFull(handler)) {}
 	UART_TransmitWord(handler, (uint8_t)c);
   }

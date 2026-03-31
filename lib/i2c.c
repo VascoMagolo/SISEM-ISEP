@@ -46,7 +46,7 @@ void lcd_init(I2C_MASTER_t *controller) {
 
     lcd_send_command(controller, 0x33);
     lcd_send_command(controller, 0x32);
-    lcd_send_command(controller, 0x28); // matriz 5x8 4bit mode, 2 rows, 5x8 matrix
+	lcd_send_command(controller, 0x28); // 4bit mode, 2 rows, 5x8 matrix
     lcd_send_command(controller, 0x0C); // turns display on, hides cursor
     lcd_send_command(controller, 0x06); // increments cursor
     lcd_clear(controller);

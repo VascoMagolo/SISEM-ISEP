@@ -6,6 +6,7 @@
 #include "DAVE.h"
 #include "lib/cli.h"
 #include "lib/uart.h"
+#include "lib/i2c.h"
 
 volatile bool led_blinking = false;
 volatile uint16_t potentiometer_value = 0;
@@ -73,9 +74,8 @@ int main(void) {
     check_button_toggle(&btn_pressed_prev);
 
     if (!UART_IsRXFIFOEmpty(&UART_0)) {
-      char uart_input = (char)uart_read_byte(&UART_0);
-
-      cli_process_command(&UART_0, uart_input, potentiometer_value);
+			char uart_input = (char) uart_read_byte(&UART_0);
+			cli_process_command(&UART_0, uart_input, potentiometer_value);
     }
   }
 }

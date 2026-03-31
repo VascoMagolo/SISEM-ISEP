@@ -51,12 +51,26 @@ void cli_process_command(const UART_t* const handler, char cmd,
 			break;
 		}
 
+		if (chars_read > 4) {
+			uart_send_string(handler,
+					"\r\n[Error] Invalid input. Maximum 4 characters allowed.\r\n");
+			cli_print_menu(handler);
+			break;
+		}
+
+		uint32_t util_chars = 0;
+		for (int i = 0; i < chars_read; i++) {
+			if (timer_v[i] != '\r' && timer_v[i] != '\n') {
+				util_chars++;
+			}
+		}
+
 		for (int i = 0; i < chars_read; i++) {
 			if (!isdigit((unsigned char )timer_v[i])) {
 				uart_send_string(handler,
 						"\r\n[Error] Invalid input. Please enter numbers only.\r\n");
 				cli_print_menu(handler);
-				return;
+				break;
 			}
 		}
 
@@ -90,7 +104,7 @@ void cli_process_command(const UART_t* const handler, char cmd,
 		lcd_set_cursor(&I2C_MASTER_0, 1, 0); // row 1 col 0
 		char data_lcd[16] = { 0 };
 		sprintf(data_lcd, "%lu ms", timer_interval);
-
+		lcd_send_string(&I2C_MASTER_0, data_lcd);
 		uart_printf(handler, "\r\nTimer value: %lu ms\r\n", timer_interval);
 
 		cli_print_menu(handler);
