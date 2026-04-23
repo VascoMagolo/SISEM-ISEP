@@ -99,13 +99,11 @@ void I2C_MASTER_0_dma_rx_handler(XMC_DMA_CH_EVENT_t event);
   { 
     .mode = XMC_GPIO_MODE_OUTPUT_OPEN_DRAIN_ALT2,
     .output_level   = XMC_GPIO_OUTPUT_LEVEL_HIGH,
-    .output_strength = XMC_GPIO_OUTPUT_STRENGTH_STRONG_SHARP_EDGE
   }; 
   static const XMC_GPIO_CONFIG_t I2C_MASTER_0_scl_pin_config   =
   { 
     .mode = XMC_GPIO_MODE_OUTPUT_OPEN_DRAIN_ALT2,
     .output_level  = XMC_GPIO_OUTPUT_LEVEL_HIGH,
-    .output_strength = XMC_GPIO_OUTPUT_STRENGTH_STRONG_SHARP_EDGE
   }; 
 const XMC_I2C_CH_CONFIG_t I2C_MASTER_0_channel_config =
 {
@@ -131,8 +129,8 @@ const I2C_MASTER_CONFIG_t I2C_MASTER_0_config =
   .fptr_i2c_config = I2C_MASTER_0_init,
   .fptr_i2c_enable_io = I2C_MASTER_0_enable_io,
   .fptr_i2c_disable_io = I2C_MASTER_0_disable_io,
-  .tx_cbhandler = NULL,
-  .rx_cbhandler = NULL,
+  .tx_cbhandler = endTxCallback,
+  .rx_cbhandler = endRxCallback,
   .nack_cbhandler = NULL,
   .arbitration_cbhandler = NULL,
   .error_cbhandler = NULL,

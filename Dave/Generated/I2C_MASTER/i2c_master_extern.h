@@ -65,6 +65,10 @@ extern "C" {
 #define I2C_MASTER_0_RX_HANDLER	IRQ_Hdlr_87
 
 extern I2C_MASTER_t I2C_MASTER_0;
+extern void endTxCallback(void);
+
+extern void endRxCallback(void);
+
 void I2C_MASTER_ProtocolHandler(I2C_MASTER_t * const handle);
 #ifdef __cplusplus
 }

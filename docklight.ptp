@@ -38,15 +38,15 @@ start change interval
 
 SEND
 2
-change interval
-35 30 30 30 30 30 0D 0A
+change interval (ms)
+35 30 30 30 30 30 30 30
 0
 5
 
 SEND
 3
 change interval
-31 30 30 30 30 30 0D 0A
+31 30 30
 0
 5
 
@@ -61,6 +61,20 @@ SEND
 5
 exit
 34
+0
+5
+
+SEND
+6
+
+35
+0
+5
+
+SEND
+7
+
+36
 0
 5
 
