@@ -116,6 +116,16 @@ __WEAK DAVE_STATUS_t DAVE_Init(void)
   {
 	 /**  Initialization of I2C_MASTER APP instance I2C_MASTER_0 */
 	 init_status = (DAVE_STATUS_t)I2C_MASTER_Init(&I2C_MASTER_0); 
+   } 
+  if (init_status == DAVE_STATUS_SUCCESS)
+  {
+	 /**  Initialization of CAN_NODE APP instance CAN_NODE_0 */
+	 init_status = (DAVE_STATUS_t)CAN_NODE_Init(&CAN_NODE_0); 
+   } 
+  if (init_status == DAVE_STATUS_SUCCESS)
+  {
+	 /**  Initialization of INTERRUPT APP instance INTERRUPT_CAN */
+	 init_status = (DAVE_STATUS_t)INTERRUPT_Init(&INTERRUPT_CAN); 
    }  
   return init_status;
 } /**  End of function DAVE_Init */

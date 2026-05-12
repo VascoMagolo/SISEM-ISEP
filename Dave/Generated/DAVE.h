@@ -84,6 +84,12 @@
 
 #include "I2C_MASTER/i2c_master.h"
   
+
+#include "GLOBAL_CAN/global_can.h"
+  
+
+#include "CAN_NODE/can_node.h"
+  
 	
 
 /**********************************************************************************************************************

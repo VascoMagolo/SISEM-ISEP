@@ -1,0 +1,18 @@
+<cangaroo-workspace>
+ <tabs>
+  <tab title="Trace" mode="aggregated" TimestampMode="2" type="TraceWindow">
+   <LinearTraceView AutoScroll="0"/>
+   <AggregatedTraceView SortColumn="3"/>
+  </tab>
+ </tabs>
+ <setup>
+  <network name="Network 1">
+   <interfaces>
+    <interface configure="1" driver="CandleAPI" triple-sampling="0" can-fd="0" auto-restart="0" bitrate-fd="4000000" auto-restart-time="100" name="candle0" sample-point-fd="875" one-shot="0" sample-point="875" type="can" bitrate="500000" listen-only="0"/>
+   </interfaces>
+   <databases>
+    <database filename="C:/Users/neru/Downloads/DBC_TarefaB.dbc" type="dbc"/>
+   </databases>
+  </network>
+ </setup>
+</cangaroo-workspace>

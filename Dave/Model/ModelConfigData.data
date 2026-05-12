@@ -87,6 +87,18 @@
   <nodes xsi:type="ApplicationModel:PortNode">
     <resource xsi:type="ResourceModel:Port" href="HW_RESOURCES/Port3/Port3_3.dd#/"/>
   </nodes>
+  <nodes xsi:type="ApplicationModel:AppNode">
+    <resource xsi:type="ResourceModel:App" href="APPS/GLOBAL_CAN/v4_0_20/GLOBAL_CAN_0.app#/"/>
+  </nodes>
+  <nodes xsi:type="ApplicationModel:AppNode">
+    <resource xsi:type="ResourceModel:App" href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#/"/>
+  </nodes>
+  <nodes xsi:type="ApplicationModel:PeripheralNode">
+    <resource xsi:type="ResourceModel:Peripheral" href="HW_RESOURCES/CAN/CAN_0.dd#/"/>
+  </nodes>
+  <nodes xsi:type="ApplicationModel:AppNode">
+    <resource xsi:type="ResourceModel:App" href="APPS/INTERRUPT/v4_0_10/INTERRUPT_1.app#/"/>
+  </nodes>
   <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.3" target="//@nodes.4"/>
   <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.5" target="//@nodes.3"/>
   <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.9" target="//@nodes.8"/>
@@ -99,6 +111,9 @@
   <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.25" target="//@nodes.4"/>
   <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.27" target="//@nodes.4"/>
   <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.27" target="//@nodes.8"/>
+  <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.29" target="//@nodes.4"/>
+  <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.30" target="//@nodes.29"/>
+  <connections xsi:type="ApplicationModel:NodeConnection" source="//@nodes.32" target="//@nodes.8"/>
   <hwConnections href="APPS/DIGITAL_IO/v4_0_18/DIGITAL_IO_0.app#//@connections.0"/>
   <hwConnections href="APPS/DIGITAL_IO/v4_0_18/DIGITAL_IO_0.app#//@connections.1"/>
   <hwConnections href="APPS/GLOBAL_CCU4/v4_1_14/GLOBAL_CCU4_0.app#//@connections.0"/>
@@ -204,4 +219,11 @@
   <hwConnections href="APPS/I2C_MASTER/v4_1_34/I2C_MASTER_0.app#//@connections.19"/>
   <hwConnections href="APPS/I2C_MASTER/v4_1_34/I2C_MASTER_0.app#//@connections.20"/>
   <hwConnections href="APPS/I2C_MASTER/v4_1_34/I2C_MASTER_0.app#//@connections.21"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.0"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.1"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.2"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.3"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.4"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.5"/>
+  <hwConnections href="APPS/CAN_NODE/v4_1_24/CAN_NODE_0.app#//@connections.6"/>
 </ApplicationModel:ApplicationData>

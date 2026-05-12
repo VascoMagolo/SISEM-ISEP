@@ -8,12 +8,42 @@ volatile bool led_blinking = false;
 volatile uint16_t potentiometer_value = 0;
 volatile bool micrium_btn_pressed = false;
 
-void interrup(void) {
+void led_interrupt(void) {
     if (led_blinking) {
         DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
     } else {
         DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
     }
+}
+
+void CAN_A_RX() {
+	CAN_NODE_STATUS_t receive_status;
+	CAN_NODE_STATUS_t status;
+	XMC_CAN_MO_t *MO_Ptr;
+	const CAN_NODE_t *HandlePtr1 = &CAN_NODE_A;
+	MO_Ptr = HandlePtr1->lmobj_ptr[0]->mo_ptr;
+
+	status = CAN_NODE_MO_GetStatus(HandlePtr1->lmobj_ptr[0]);
+	//Check receive pending status
+	if (status & XMC_CAN_MO_STATUS_RX_PENDING) {
+		// Clear the flag
+		XMC_CAN_MO_ResetStatus(MO_Ptr, XMC_CAN_MO_RESET_STATUS_RX_PENDING);
+		// Read the received Message object
+		receive_status = CAN_NODE_MO_Receive(HandlePtr1->lmobj_ptr[0]);
+		if (receive_status == CAN_NODE_STATUS_SUCCESS) {
+			memcpy(data_rx, &MO_Ptr->can_data[0], sizeof(MO_Ptr->can_data[0]));
+			memcpy(data_rx + sizeof(MO_Ptr->can_data[0]), &MO_Ptr->can_data[1],
+					sizeof(MO_Ptr->can_data[1]));
+
+			length_rx = MO_Ptr->can_data_length;
+
+			flag_data_rx = 0x01;
+		} else {
+			// message object failed to receive.
+		}
+	}
+
+	return;
 }
 
 static void update_pwm_from_potentiometer(volatile uint16_t *pot_val) {
