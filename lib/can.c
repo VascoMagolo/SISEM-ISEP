@@ -1,7 +1,8 @@
 #include "can.h"
 #include "DAVE.h"
+#include <stdint.h>
 
-uint8_t flag_data_rx = 0x00;
+volatile uint8_t flag_data_rx = 0x00;
 uint8_t length_rx = 0x00;
 uint8_t data_rx[0x08] = { 0x00 };
 
@@ -9,8 +10,8 @@ void can_interrupt() {
 	CAN_NODE_STATUS_t receive_status;
 	CAN_NODE_STATUS_t status;
 
-	const CAN_NODE_t *can_node = &CAN_NODE_A;
-	XMC_CAN_MO_t *msg_obj = CAN_NODE_A->lmobj_ptr[0]->mo_ptr;
+	const CAN_NODE_t *can_node = &CAN_NODE_0;
+	XMC_CAN_MO_t *msg_obj = CAN_NODE_0.lmobj_ptr[0]->mo_ptr;
 
 	status = CAN_NODE_MO_GetStatus(can_node->lmobj_ptr[0]);
 
@@ -73,4 +74,24 @@ void can_send(const CAN_NODE_t* can_node, uint16_t can_id, uint8_t *data,
 	}
 
 	return;
+}
+
+void can_send_sensor(const CAN_NODE_t* can_node, uint16_t can_id, float temperature, float humidity) {
+	// DBC encoding:
+	// Temperature [0..31]  = (celsius + 55) * 10  (factor 0.1, offset -55)
+	// Humidity    [32..63] = percent * 10          (factor 0.1, offset 0)
+    uint32_t temp_enc = (uint32_t)((temperature + 55.0f) * 10.0f);
+    uint32_t hum_enc  = (uint32_t)(humidity * 10.0f);
+
+    uint8_t payload[8];
+    payload[0] = (uint8_t)(temp_enc);
+    payload[1] = (uint8_t)(temp_enc >> 8);
+    payload[2] = (uint8_t)(temp_enc >> 16);
+    payload[3] = (uint8_t)(temp_enc >> 24);
+    payload[4] = (uint8_t)(hum_enc);
+    payload[5] = (uint8_t)(hum_enc >> 8);
+    payload[6] = (uint8_t)(hum_enc >> 16);
+    payload[7] = (uint8_t)(hum_enc >> 24);
+
+    can_send(can_node, can_id, payload, 8);
 }

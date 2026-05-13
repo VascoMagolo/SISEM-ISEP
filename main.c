@@ -3,61 +3,44 @@
 #include "DAVE.h"
 #include "lib/cli.h"
 #include "lib/uart.h"
+#include "lib/can.h"
+#include "lib/aht10.h"
 
-volatile bool led_blinking = false;
+#define TICK_MS 10U
+#define TIMER_MS(ms) ((uint32_t)(ms) * 100000U)
+
 volatile uint16_t potentiometer_value = 0;
-volatile bool micrium_btn_pressed = false;
+volatile bool     led_blinking        = false;
+volatile uint32_t led_tick_interval = 100;  // 100 ticks * 10ms = 1000ms default
 
-void led_interrupt(void) {
-    if (led_blinking) {
-        DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
-    } else {
+#define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
+
+static volatile uint32_t tick_count        = 0;
+static volatile bool     adc_tick          = false;
+static volatile bool     btn_event         = false;
+static volatile bool     can_sensor_tick   = false;
+
+void system_tick(void) {
+    tick_count++;
+
+    adc_tick = true;
+
+    static bool btn_prev = false;
+    bool btn_now = (DIGITAL_IO_GetInput(&DIGITAL_IO_BTN) == 1);
+    if (btn_now && !btn_prev) {
+        btn_event = true;
+    }
+    btn_prev = btn_now;
+
+    if (tick_count % CAN_SENSOR_TICKS == 0) {
+        can_sensor_tick = true;
+    }
+
+    if (!led_blinking) {
         DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
+    } else if (tick_count % led_tick_interval == 0) {
+        DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
     }
-}
-
-void CAN_A_RX() {
-	CAN_NODE_STATUS_t receive_status;
-	CAN_NODE_STATUS_t status;
-	XMC_CAN_MO_t *MO_Ptr;
-	const CAN_NODE_t *HandlePtr1 = &CAN_NODE_A;
-	MO_Ptr = HandlePtr1->lmobj_ptr[0]->mo_ptr;
-
-	status = CAN_NODE_MO_GetStatus(HandlePtr1->lmobj_ptr[0]);
-	//Check receive pending status
-	if (status & XMC_CAN_MO_STATUS_RX_PENDING) {
-		// Clear the flag
-		XMC_CAN_MO_ResetStatus(MO_Ptr, XMC_CAN_MO_RESET_STATUS_RX_PENDING);
-		// Read the received Message object
-		receive_status = CAN_NODE_MO_Receive(HandlePtr1->lmobj_ptr[0]);
-		if (receive_status == CAN_NODE_STATUS_SUCCESS) {
-			memcpy(data_rx, &MO_Ptr->can_data[0], sizeof(MO_Ptr->can_data[0]));
-			memcpy(data_rx + sizeof(MO_Ptr->can_data[0]), &MO_Ptr->can_data[1],
-					sizeof(MO_Ptr->can_data[1]));
-
-			length_rx = MO_Ptr->can_data_length;
-
-			flag_data_rx = 0x01;
-		} else {
-			// message object failed to receive.
-		}
-	}
-
-	return;
-}
-
-static void update_pwm_from_potentiometer(volatile uint16_t *pot_val) {
-    *pot_val = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
-    PWM_SetDutyCycle(&PWM_0, (uint32_t)(*pot_val) * 10000 / 255);
-}
-
-static void check_button_toggle(bool *prev_state) {
-    bool pressed = (DIGITAL_IO_GetInput(&DIGITAL_IO_BTN) == 1);
-    if (pressed && !(*prev_state)) {
-        micrium_btn_pressed = !micrium_btn_pressed;
-    }
-    led_blinking = micrium_btn_pressed;
-    *prev_state = pressed;
 }
 
 int main(void) {
@@ -66,21 +49,55 @@ int main(void) {
         return 1;
     }
 
-    cli_print_header(&UART_0);
-    cli_print_menu(&UART_0);
+    TIMER_Stop(&TIMER_0);
+    TIMER_Clear(&TIMER_0);
+    TIMER_SetTimeInterval(&TIMER_0, TIMER_MS(TICK_MS));
+    TIMER_Start(&TIMER_0);
+
+	// The UART APP configures an RX FIFO interrupt (IRQn 89) whose handler
+	// calls UART_lReceiveHandler. Since we never call UART_Receive(), that
+	// handler does nothing but the interrupt would keep re-asserting while
+	//  bytes sit in the FIFO. Disable it and poll the FIFO directly instead.
+    NVIC_DisableIRQ((IRQn_Type)89);
 
     ADC_MEASUREMENT_StartConversion(&ADC_POTENTIOMETER);
 
-    bool btn_pressed_prev = false;
+    cli_print_header(&UART_0);
+    cli_print_menu(&UART_0);
 
     while (1) {
         WATCHDOG_Service();
-        update_pwm_from_potentiometer(&potentiometer_value);
-        check_button_toggle(&btn_pressed_prev);
 
-        if (!UART_IsRXFIFOEmpty(&UART_0)) {
-            char c = (char)uart_read_byte(&UART_0);
-			cli_process_command(&UART_0, c, potentiometer_value);
+        if (adc_tick) {
+            adc_tick = false;
+            potentiometer_value = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
+            PWM_SetDutyCycle(&PWM_0, (uint32_t)potentiometer_value * 10000 / 255);
+        }
+
+        if (btn_event) {
+            btn_event = false;
+            led_blinking = !led_blinking;
+        }
+
+        if (flag_data_rx) {
+            flag_data_rx = 0;
+			// data_rx[0..length_rx-1] holds received frame payload
+        }
+
+        if (can_sensor_tick) {
+            can_sensor_tick = false;
+            float temp = 0.0f, hum = 0.0f;
+            uint8_t raw[8] = { 0 };
+            if (aht10_read(raw)) {
+                aht10_parse_temperature(&temp, raw);
+                aht10_parse_humidity(&hum, raw);
+                can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temp, hum);
+            }
+        }
+
+        while (!UART_IsRXFIFOEmpty(&UART_0)) {
+            char c = (char)UART_GetReceivedWord(&UART_0);
+            cli_process_char(&UART_0, c);
         }
     }
 }

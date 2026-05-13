@@ -56,7 +56,7 @@
  * MACROS
  **********************************************************************************************************************/
 	
-#define led_interrupt IRQ_Hdlr_46
+#define system_tick IRQ_Hdlr_46
 		
 #define can_interrupt IRQ_Hdlr_77
 		

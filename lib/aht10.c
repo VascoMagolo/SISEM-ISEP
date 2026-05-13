@@ -1,7 +1,7 @@
 #include "aht10.h"
 #include "DAVE.h"
 
-// 1byte shifted i2c address for AHT10 (0x38 << 1)
+// 1 byte shifted i2c address for AHT10 (0x38 << 1)
 #define AHT10_ADDRESS 0x70
 
 volatile uint8_t i2c_tx_completion = 0;
@@ -24,7 +24,14 @@ static void delay_aht10() {
     }
 }
 
-void parse_temperature(uint8_t data[6], float* temperature) {
+/* byte 1: HHHHHHHH (most significant H bits)
+ * byte 2: HHHHHHHH (middle significant H bits)
+ * byte 3(top 4 bits): HHHH (least significant H bits)
+ * byte 3(least 4 bits): TTTT (most significant T bits)
+ * byte 4: TTTTTTTT (middle significant T bits)
+ * byte 5: TTTTTTTT (least significant T bits)
+ */
+void aht10_parse_temperature(float* temperature, uint8_t data[]) {
 	uint32_t t_part1 = ((uint32_t) (data[3] & 0x0F)) << 16;
 	uint32_t t_part2 = (uint32_t) data[4] << 8;
 	uint32_t t_part3 = (uint32_t) data[5];
@@ -34,7 +41,7 @@ void parse_temperature(uint8_t data[6], float* temperature) {
 	*temperature = ((float) t_raw * 200.0f) / (float) (1 << 20) - 50.0f;
 }
 
-void parse_humidity(uint8_t data[6], float* humidity) {
+void aht10_parse_humidity(float* humidity, uint8_t data[]) {
 	uint32_t h_part1 = (uint32_t) data[1] << 12;
 	uint32_t h_part2 = (uint32_t) data[2] << 4;
 	uint32_t h_part3 = (uint32_t) data[3] >> 4;
@@ -44,9 +51,8 @@ void parse_humidity(uint8_t data[6], float* humidity) {
 	*humidity = ((float) h_raw * 100.0f) / (float) (1 << 20);
 }
 
-bool aht10_read(float *temperature, float *humidity) {
+bool aht10_read(uint8_t data[6]) {
 	uint8_t cmd[3] = { 0xAC, 0x33, 0x00 };
-	uint8_t data[6] = { 0 };
 
 	// send measurement trigger
 	i2c_tx_completion = 0;
@@ -67,19 +73,5 @@ bool aht10_read(float *temperature, float *humidity) {
 	// check the busy bit (bit 7 of byte 0 (data[0])). If it's 0, data is ready.
 	bool is_data_ready = (data[0] & (1 << 7)) == 0;
 
-	/* byte 1: HHHHHHHH (most significant H bits)
-	 * byte 2: HHHHHHHH (middle significant H bits)
-	 * byte 3(top 4 bits): HHHH (least significant H bits)
-	 * byte 3(least 4 bits): TTTT (most significant T bits)
-	 * byte 4: TTTTTTTT (middle significant T bits)
-	 * byte 5: TTTTTTTT (least significant T bits)
-	 */
-	if (is_data_ready) {
-		parse_humidity(data, humidity);
-		parse_temperature(data, temperature);
-
-		return true;
-	}
-
-	return false; // busy or failed
+	return is_data_ready;
 }
