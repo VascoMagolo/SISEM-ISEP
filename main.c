@@ -10,8 +10,11 @@
 #define TIMER_MS(ms) ((uint32_t)(ms) * 100000U)
 
 volatile uint16_t potentiometer_value = 0;
-volatile bool     led_blinking        = false;
-volatile uint32_t led_tick_interval = 100;  // 100 ticks * 10ms = 1000ms default
+volatile bool     led_blinking = false;
+volatile uint32_t led_tick_interval   = 100;  // 100 ticks * 10ms = 1000ms default
+volatile          bool led_on = true;
+volatile float    temperature         = 0.0f;
+volatile float    humidity            = 0.0f;
 
 #define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
 
@@ -37,9 +40,11 @@ void system_tick(void) {
     }
 
     if (!led_blinking) {
-        DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
+		DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
+		led_on = true;
     } else if (tick_count % led_tick_interval == 0) {
-        DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
+		DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
+		led_on = !led_on;
     }
 }
 
@@ -86,13 +91,11 @@ int main(void) {
 
         if (can_sensor_tick) {
             can_sensor_tick = false;
-			float temp = 0.0f;
-			float hum = 0.0f;
             uint8_t raw[8] = { 0 };
             if (aht10_read(raw)) {
-                aht10_parse_temperature(&temp, raw);
-                aht10_parse_humidity(&hum, raw);
-                can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temp, hum);
+                aht10_parse_temperature((float*)&temperature, raw);
+                aht10_parse_humidity((float*)&humidity, raw);
+                can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temperature, humidity);
             }
         }
 
