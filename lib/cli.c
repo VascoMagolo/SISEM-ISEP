@@ -6,8 +6,10 @@
 #include "cli.h"
 #include "uart.h"
 #include "aht10.h"
+#include "can.h"
 
 #define TICK_MS 10U
+
 volatile uint32_t timer_interval = 2000;  // full blink period in ms
 
 // set by main when user changes the LED blink interval
@@ -19,11 +21,17 @@ extern volatile uint16_t potentiometer_value;
 typedef enum {
     CLI_STATE_MENU,
     CLI_STATE_READING_TIMER,
+    CLI_STATE_READING_CAN_ID,
 } cli_state_t;
 
 static cli_state_t cli_state = CLI_STATE_MENU;
 static char timer_buf[6];  // up to 5 digits for 10000 (ms)
 static uint8_t timer_buf_len = 0;
+
+static char     can_id_buf[5];  // up to 4 digits for 2047
+static uint8_t  can_id_buf_len  = 0;
+static uint16_t can_filter_id   = 0;
+static bool     can_filter_active = false;
 
 void cli_print_header(const UART_t *const handler) {
     uart_send_string(handler, "Grupo 3, Diogo Nogueira/Vasco Magolo, 1241692/1231562\r\n");
@@ -35,7 +43,8 @@ void cli_print_menu(const UART_t *const handler) {
         " 2 - Set led blinking rate\r\n"
         " 3 - Blinking rate value\r\n"
         " 4 - Read AHT10 Sensor\r\n"
-        " 5 - Exit\r\n");
+        " 5 - Set CAN RX filter\r\n"
+        " 6 - Exit\r\n");
 }
 
 static void apply_timer_interval(const UART_t *const handler) {
@@ -53,6 +62,18 @@ static void apply_timer_interval(const UART_t *const handler) {
     led_tick_interval = (value_ms / 2) / TICK_MS;
 
     uart_printf(handler, "\r\nBlink period set to %lu ms\r\n", value_ms);
+    cli_print_menu(handler);
+}
+
+static void apply_can_filter(const UART_t *const handler) {
+    uint32_t value = (uint32_t)strtoul(can_id_buf, NULL, 16);
+    if (value > 0x7FF) {
+        uart_send_string(handler, "\r\n[Warning] Adjusted to maximum: 0x7FF.\r\n");
+        value = 0x7FF;
+    }
+    can_filter_id     = (uint16_t)value;
+    can_filter_active = true;
+    uart_printf(handler, "\r\nFiltering CAN ID 0x%03X\r\n", (unsigned)value);
     cli_print_menu(handler);
 }
 
@@ -91,6 +112,11 @@ void cli_process_char(const UART_t *const handler, char c) {
             break;
         }
         case '5':
+            uart_send_string(handler, "\r\nCAN ID to filter (hex, e.g. 4C0):\r\n");
+            can_id_buf_len = 0;
+            cli_state = CLI_STATE_READING_CAN_ID;
+            break;
+        case '6':
             uart_send_string(handler, "\r\nExiting...\r\n");
             while (1) {}
             break;
@@ -121,5 +147,34 @@ void cli_process_char(const UART_t *const handler, char c) {
             UART_TransmitWord(handler, (uint8_t)c);
         }
         break;
+
+    case CLI_STATE_READING_CAN_ID:
+        if (c == '\r' || c == '\n') {
+            if (can_id_buf_len == 0) {
+                cli_state = CLI_STATE_MENU;
+                cli_print_menu(handler);
+                break;
+            }
+            can_id_buf[can_id_buf_len] = '\0';
+            apply_can_filter(handler);
+            cli_state = CLI_STATE_MENU;
+        } else if (!isxdigit((unsigned char)c)) {
+            uart_send_string(handler, "\r\n[Error] Hex digits only.\r\n");
+            cli_state = CLI_STATE_MENU;
+            cli_print_menu(handler);
+        } else if (can_id_buf_len < (sizeof(can_id_buf) - 1)) {
+            can_id_buf[can_id_buf_len++] = c;
+            while (UART_IsTXFIFOFull(handler)) {}
+            UART_TransmitWord(handler, (uint8_t)c);
+        }
+        break;
     }
+}
+
+void cli_process_can_rx(const UART_t *const handler, uint16_t can_id, const uint8_t data[8]) {
+    if (!can_filter_active || can_id != can_filter_id) return;
+    float temp, hum;
+    can_decode_sensor(data, &temp, &hum);
+    uart_printf(handler, "\r\n[CAN 0x%03X] Temp: %d C  Hum: %d %%\r\n",
+        can_id, (int)temp, (int)hum);
 }

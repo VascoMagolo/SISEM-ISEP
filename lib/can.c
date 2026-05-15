@@ -2,7 +2,8 @@
 #include "DAVE.h"
 #include <stdint.h>
 
-volatile uint8_t flag_data_rx = 0x00;
+volatile uint8_t  flag_data_rx = 0x00;
+volatile uint16_t can_id_rx    = 0x00;
 uint8_t length_rx = 0x00;
 uint8_t data_rx[0x08] = { 0x00 };
 
@@ -27,7 +28,8 @@ void can_interrupt() {
 			memcpy(data_rx + sizeof(msg_obj->can_data[0]),
 					&msg_obj->can_data[1], sizeof(msg_obj->can_data[1]));
 
-			length_rx = msg_obj->can_data_length;
+			length_rx  = msg_obj->can_data_length;
+			can_id_rx  = (uint16_t)msg_obj->can_identifier;
 
 			flag_data_rx = 0x01;
 		} else {
@@ -94,4 +96,13 @@ void can_send_sensor(const CAN_NODE_t* can_node, uint16_t can_id, float temperat
     payload[7] = (uint8_t)(hum_enc >> 24);
 
     can_send(can_node, can_id, payload, 8);
+}
+
+void can_decode_sensor(const uint8_t data[8], float *temp, float *hum) {
+    uint32_t temp_raw = (uint32_t)data[0] | ((uint32_t)data[1] << 8)
+                      | ((uint32_t)data[2] << 16) | ((uint32_t)data[3] << 24);
+    uint32_t hum_raw  = (uint32_t)data[4] | ((uint32_t)data[5] << 8)
+                      | ((uint32_t)data[6] << 16) | ((uint32_t)data[7] << 24);
+    *temp = (float)temp_raw / 10.0f - 55.0f;
+    *hum  = (float)hum_raw  / 10.0f;
 }

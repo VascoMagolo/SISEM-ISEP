@@ -81,12 +81,13 @@ int main(void) {
 
         if (flag_data_rx) {
             flag_data_rx = 0;
-			// data_rx[0..length_rx-1] holds received frame payload
+            cli_process_can_rx(&UART_0, can_id_rx, data_rx);
         }
 
         if (can_sensor_tick) {
             can_sensor_tick = false;
-            float temp = 0.0f, hum = 0.0f;
+			float temp = 0.0f;
+			float hum = 0.0f;
             uint8_t raw[8] = { 0 };
             if (aht10_read(raw)) {
                 aht10_parse_temperature(&temp, raw);

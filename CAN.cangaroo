@@ -1,6 +1,6 @@
 <cangaroo-workspace>
  <tabs>
-  <tab title="Trace" mode="aggregated" TimestampMode="2" type="TraceWindow">
+  <tab title="Trace" type="TraceWindow" mode="aggregated" TimestampMode="2">
    <LinearTraceView AutoScroll="0"/>
    <AggregatedTraceView SortColumn="3"/>
   </tab>
@@ -8,10 +8,10 @@
  <setup>
   <network name="Network 1">
    <interfaces>
-    <interface configure="1" driver="CandleAPI" triple-sampling="0" can-fd="0" auto-restart="0" bitrate-fd="4000000" auto-restart-time="100" name="candle0" sample-point-fd="875" one-shot="0" sample-point="875" type="can" bitrate="500000" listen-only="0"/>
+    <interface triple-sampling="0" one-shot="0" sample-point-fd="875" driver="CandleAPI" type="can" sample-point="875" bitrate-fd="4000000" listen-only="0" auto-restart-time="100" name="candle0" auto-restart="0" bitrate="500000" can-fd="0" configure="1"/>
    </interfaces>
    <databases>
-    <database filename="C:/Users/neru/Downloads/DBC_TarefaB.dbc" type="dbc"/>
+    <database type="dbc" filename="C:/Infineon/Tools/DAVE IDE/4.5.0.202105191637/eclipse/workspace/tarefa_a/DBC_TarefaB.dbc"/>
    </databases>
   </network>
  </setup>
