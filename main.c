@@ -1,27 +1,32 @@
 #include <stdbool.h>
 
 #include "DAVE.h"
+#include "config.h"
 #include "lib/cli.h"
 #include "lib/uart.h"
-#include "lib/can.h"
-#include "lib/aht10.h"
 
 #define TICK_MS 10U
 #define TIMER_MS(ms) ((uint32_t)(ms) * 100000U)
 
+# ifdef FEATURE_AHT10
+#	include "lib/aht10.h"
+	volatile float temperature = 0.0f;
+	volatile float humidity = 0.0f;
+# endif
+
+# ifdef FEATURE_CAN
+#	include "lib/can.h"
+#	define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
+	static volatile bool can_sensor_tick = false;
+# endif
+
 volatile uint16_t potentiometer_value = 0;
-volatile bool     led_blinking = false;
+volatile bool     led_blinking        = false;
 volatile uint32_t led_tick_interval   = 100;  // 100 ticks * 10ms = 1000ms default
-volatile          bool led_on = true;
-volatile float    temperature         = 0.0f;
-volatile float    humidity            = 0.0f;
 
-#define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
-
-static volatile uint32_t tick_count        = 0;
-static volatile bool     adc_tick          = false;
-static volatile bool     btn_event         = false;
-static volatile bool     can_sensor_tick   = false;
+static volatile uint32_t tick_count = 0;
+static volatile bool     adc_tick   = false;
+static volatile bool     btn_event  = false;
 
 void system_tick(void) {
     tick_count++;
@@ -35,16 +40,16 @@ void system_tick(void) {
     }
     btn_prev = btn_now;
 
-    if (tick_count % CAN_SENSOR_TICKS == 0) {
-        can_sensor_tick = true;
-    }
+#	ifdef FEATURE_CAN
+		if (tick_count % CAN_SENSOR_TICKS == 0) {
+			can_sensor_tick = true;
+		}
+#	endif
 
     if (!led_blinking) {
-		DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
-		led_on = true;
+        DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
     } else if (tick_count % led_tick_interval == 0) {
-		DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
-		led_on = !led_on;
+        DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
     }
 }
 
@@ -59,10 +64,10 @@ int main(void) {
     TIMER_SetTimeInterval(&TIMER_0, TIMER_MS(TICK_MS));
     TIMER_Start(&TIMER_0);
 
-	// The UART APP configures an RX FIFO interrupt (IRQn 89) whose handler
-	// calls UART_lReceiveHandler. Since we never call UART_Receive(), that
-	// handler does nothing but the interrupt would keep re-asserting while
-	//  bytes sit in the FIFO. Disable it and poll the FIFO directly instead.
+    // The UART APP configures an RX FIFO interrupt (IRQn 89) whose handler
+    // calls UART_lReceiveHandler. Since we never call UART_Receive(), that
+    // handler does nothing but the interrupt would keep re-asserting while
+    // bytes sit in the FIFO. Disable it and poll the FIFO directly instead.
     NVIC_DisableIRQ((IRQn_Type)89);
 
     ADC_MEASUREMENT_StartConversion(&ADC_POTENTIOMETER);
@@ -84,20 +89,24 @@ int main(void) {
             led_blinking = !led_blinking;
         }
 
-        if (flag_data_rx) {
-            flag_data_rx = 0;
-            cli_process_can_rx(&UART_0, can_id_rx, data_rx);
-        }
+#		ifdef FEATURE_CAN
+			if (flag_data_rx) {
+				flag_data_rx = 0;
+				cli_process_can_rx(&UART_0, can_id_rx, data_rx);
+			}
 
-        if (can_sensor_tick) {
-            can_sensor_tick = false;
-            uint8_t raw[8] = { 0 };
-            if (aht10_read(raw)) {
-                aht10_parse_temperature((float*)&temperature, raw);
-                aht10_parse_humidity((float*)&humidity, raw);
-                can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temperature, humidity);
-            }
+			if (can_sensor_tick) {
+				can_sensor_tick = false;
+#			ifdef FEATURE_AHT10
+				uint8_t raw[8] = { 0 };
+				if (aht10_read(raw)) {
+					aht10_parse_temperature((float*)&temperature, raw);
+					aht10_parse_humidity((float*)&humidity, raw);
+					can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temperature, humidity);
+				}
+#			endif
         }
+#		endif
 
         while (!UART_IsRXFIFOEmpty(&UART_0)) {
             char c = (char)UART_GetReceivedWord(&UART_0);

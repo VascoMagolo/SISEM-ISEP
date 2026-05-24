@@ -13,6 +13,17 @@ Event-driven bare-metal firmware for the XMC4200. A 10 ms system tick drives all
 - **AHT10** temperature and humidity sensor read over I2C
 - **CAN** periodic broadcast of sensor data every 500 ms; receive and parse frames from other groups
 
+## Feature flags
+
+Hardware modules can be individually enabled or disabled in [`config.h`](config.h):
+
+```c
+#define FEATURE_AHT10  // I2C temperature and humidity sensor
+#define FEATURE_CAN    // CAN bus transmit and receive
+```
+
+Commenting out a define removes all related code at compile time - includes, CLI menu options, periodic tasks, and ISR handlers - without touching any other file.
+
 ## UART CLI
 
 Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre-configured send sequences.
@@ -38,8 +49,8 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 | CAN ID    | `0x4C0` (1216) - `Msg_Group_3`                 |
 | DLC       | 8 bytes                                        |
 | Period    | 500 ms                                         |
-| Bytes 0–3 | Temperature - `physical = raw × 0.1 − 55` (°C) |
-| Bytes 4–7 | Humidity - `physical = raw × 0.1` (%)          |
+| Bytes 0-3 | Temperature - `physical = raw * 0.1 - 55` (°C) |
+| Bytes 4-7 | Humidity - `physical = raw * 0.1` (%)          |
 
 DBC definition: [`docs/DBC_TarefaB.dbc`](docs/DBC_TarefaB.dbc)  
 Cangaroo workspace: [`apps/CAN.cangaroo`](apps/CAN.cangaroo)
