@@ -9,15 +9,15 @@
 #define TIMER_MS(ms) ((uint32_t)(ms) * 100000U)
 
 # ifdef FEATURE_AHT10
-#	include "lib/aht10.h"
-	volatile float temperature = 0.0f;
-	volatile float humidity = 0.0f;
+#    include "lib/aht10.h"
+     volatile float temperature = 0.0f;
+     volatile float humidity = 0.0f;
 # endif
 
 # ifdef FEATURE_CAN
-#	include "lib/can.h"
-#	define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
-	static volatile bool can_sensor_tick = false;
+#    include "lib/can.h"
+#    define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
+     static volatile bool can_sensor_tick = false;
 # endif
 
 volatile uint16_t potentiometer_value = 0;
@@ -40,11 +40,11 @@ void system_tick(void) {
     }
     btn_prev = btn_now;
 
-#	ifdef FEATURE_CAN
-		if (tick_count % CAN_SENSOR_TICKS == 0) {
-			can_sensor_tick = true;
-		}
-#	endif
+#   ifdef FEATURE_CAN
+        if (tick_count % CAN_SENSOR_TICKS == 0) {
+            can_sensor_tick = true;
+        }
+#   endif
 
     if (!led_blinking) {
         DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
@@ -89,24 +89,24 @@ int main(void) {
             led_blinking = !led_blinking;
         }
 
-#		ifdef FEATURE_CAN
-			if (flag_data_rx) {
-				flag_data_rx = 0;
-				cli_process_can_rx(&UART_0, can_id_rx, data_rx);
-			}
+#       ifdef FEATURE_CAN
+            if (flag_data_rx) {
+                flag_data_rx = 0;
+                cli_process_can_rx(&UART_0, can_id_rx, data_rx);
+            }
 
-			if (can_sensor_tick) {
-				can_sensor_tick = false;
-#			ifdef FEATURE_AHT10
-				uint8_t raw[8] = { 0 };
-				if (aht10_read(raw)) {
-					aht10_parse_temperature((float*)&temperature, raw);
-					aht10_parse_humidity((float*)&humidity, raw);
-					can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temperature, humidity);
-				}
-#			endif
-        }
-#		endif
+            if (can_sensor_tick) {
+                can_sensor_tick = false;
+#               ifdef FEATURE_AHT10
+                    uint8_t raw[8] = { 0 };
+                    if (aht10_read(raw)) {
+                        aht10_parse_temperature((float*)&temperature, raw);
+                        aht10_parse_humidity((float*)&humidity, raw);
+                        can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temperature, humidity);
+                    }
+#               endif
+            }
+#       endif
 
         while (!UART_IsRXFIFOEmpty(&UART_0)) {
             char c = (char)UART_GetReceivedWord(&UART_0);

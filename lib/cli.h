@@ -9,7 +9,7 @@ void cli_print_menu(const UART_t* const handler);
 void cli_process_char(const UART_t* const handler, char c);
 
 # ifdef FEATURE_CAN
-	void cli_process_can_rx(const UART_t* const handler, uint16_t can_id, const uint8_t data[8]);
+     void cli_process_can_rx(const UART_t* const handler, uint16_t can_id, const uint8_t data[8]);
 # endif
 
 #endif /* LIB_CLI_H_ */
