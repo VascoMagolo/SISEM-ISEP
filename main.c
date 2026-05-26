@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "DAVE.h"
 #include "config.h"
@@ -7,6 +8,10 @@
 
 #define TICK_MS 10U
 #define TIMER_MS(ms) ((uint32_t)(ms) * 100000U)
+
+# ifdef FEATURE_LCD
+#    include "lib/lcd.h"
+# endif
 
 # ifdef FEATURE_AHT10
 #    include "lib/aht10.h"
@@ -72,6 +77,10 @@ int main(void) {
 
     ADC_MEASUREMENT_StartConversion(&ADC_POTENTIOMETER);
 
+#   ifdef FEATURE_LCD
+        lcd_init(&I2C_MASTER_0);
+#   endif
+
     cli_print_header(&UART_0);
     cli_print_menu(&UART_0);
 
@@ -82,6 +91,13 @@ int main(void) {
             adc_tick = false;
             potentiometer_value = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
             PWM_SetDutyCycle(&PWM_0, (uint32_t)potentiometer_value * 10000 / 255);
+#           ifdef FEATURE_LCD
+                if (lcd_mode == LCD_MODE_POT) {
+                    char buf[17];
+                    sprintf(buf, "Pot: %u", potentiometer_value);
+                    lcd_write(&I2C_MASTER_0, 1, buf);
+                }
+#           endif
         }
 
         if (btn_event) {
@@ -93,6 +109,15 @@ int main(void) {
             if (flag_data_rx) {
                 flag_data_rx = 0;
                 cli_process_can_rx(&UART_0, can_id_rx, data_rx);
+#               ifdef FEATURE_LCD
+                    if (lcd_mode == LCD_MODE_SENSOR) {
+                        char buf[17];
+                        sprintf(buf, "ID:0x%03X", can_id_rx);
+                        lcd_write(&I2C_MASTER_0, 1, buf);
+                        sprintf(buf, "T:%dC H:%d%%", (int)temperature, (int)humidity);
+                        lcd_write(&I2C_MASTER_0, 2, buf);
+                    }
+#               endif
             }
 
             if (can_sensor_tick) {

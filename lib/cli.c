@@ -13,6 +13,18 @@
 #   include "aht10.h"
 # endif
 
+# ifdef FEATURE_LCD
+#   include "lcd.h"
+    volatile lcd_mode_t lcd_mode = LCD_MODE_OFF;
+
+    static void print_lcd_menu(const UART_t *const handler) {
+        uart_send_string(handler, "\r\nLCD mode:\r\n"
+            " 0 - Off\r\n"
+            " 1 - Sensor (Temp + Humidity)\r\n"
+            " 2 - Potentiometer\r\n");
+    }
+# endif
+
 # ifdef FEATURE_CAN
 #   include "can.h"
 
@@ -53,6 +65,9 @@ typedef enum {
 #   ifdef FEATURE_CAN
         CLI_STATE_READING_CAN_ID,
 #   endif
+#   ifdef FEATURE_LCD
+        CLI_STATE_LCD_MODE,
+#   endif
 } cli_state_t;
 
 static cli_state_t cli_state    = CLI_STATE_MENU;
@@ -65,6 +80,7 @@ void cli_print_header(const UART_t *const handler) {
 
 void cli_print_menu(const UART_t *const handler) {
     uart_send_string(handler, "\r\n\nMenu\r\n"
+        " 0 - Exit\r\n"
         " 1 - Potentiometer value\r\n"
         " 2 - Set led blinking rate\r\n"
         " 3 - Blinking rate value\r\n"
@@ -74,7 +90,10 @@ void cli_print_menu(const UART_t *const handler) {
 #       ifdef FEATURE_CAN
             " 5 - Set CAN RX filter\r\n"
 #       endif
-        " 6 - Exit\r\n");
+#       ifdef FEATURE_LCD
+            " 6 - Set LCD mode\r\n"
+#       endif
+    );
 }
 
 static void apply_timer_interval(const UART_t *const handler) {
@@ -100,6 +119,10 @@ void cli_process_char(const UART_t *const handler, char c) {
 
     case CLI_STATE_MENU:
         switch (c) {
+        case '0':
+            uart_send_string(handler, "\r\nExiting...\r\n");
+            while (1) {}
+            break;
         case '1':
             uart_printf(handler, "\r\nADC Value: %u\r\n", potentiometer_value);
             cli_print_menu(handler);
@@ -138,11 +161,13 @@ void cli_process_char(const UART_t *const handler, char c) {
                 cli_state = CLI_STATE_READING_CAN_ID;
                 break;
 #       endif
-        case '6':
-            uart_send_string(handler, "\r\nExiting...\r\n");
-            while (1) {}
-            break;
-        default:
+#       ifdef FEATURE_LCD
+            case '6':
+                print_lcd_menu(handler);
+                cli_state = CLI_STATE_LCD_MODE;
+                break;
+#       endif
+		default:
             uart_printf(handler, "\r\n[Error] '%c' is not a valid option.\r\n", c);
             cli_print_menu(handler);
             break;
@@ -170,27 +195,54 @@ void cli_process_char(const UART_t *const handler, char c) {
         }
         break;
 
-#   ifdef FEATURE_CAN
-    case CLI_STATE_READING_CAN_ID:
-        if (c == '\r' || c == '\n') {
-            if (can_id_buf_len == 0) {
-                cli_state = CLI_STATE_MENU;
-                cli_print_menu(handler);
+#   ifdef FEATURE_LCD
+        case CLI_STATE_LCD_MODE:
+            switch (c) {
+            case '0':
+                lcd_mode = LCD_MODE_OFF;
+                lcd_clear(&I2C_MASTER_0);
+                uart_send_string(handler, "\r\nLCD off.\r\n");
+                break;
+            case '1':
+                lcd_mode = LCD_MODE_SENSOR;
+                lcd_clear(&I2C_MASTER_0);
+                uart_send_string(handler, "\r\nLCD: Sensor mode.\r\n");
+                break;
+            case '2':
+                lcd_mode = LCD_MODE_POT;
+                lcd_clear(&I2C_MASTER_0);
+                uart_send_string(handler, "\r\nLCD: Potentiometer mode.\r\n");
+                break;
+            default:
+                uart_printf(handler, "\r\n[Error] '%c' is not a valid option.\r\n", c);
                 break;
             }
-            can_id_buf[can_id_buf_len] = '\0';
-            apply_can_filter(handler);
-            cli_state = CLI_STATE_MENU;
-        } else if (!isxdigit((unsigned char)c)) {
-            uart_send_string(handler, "\r\n[Error] Hex digits only.\r\n");
             cli_state = CLI_STATE_MENU;
             cli_print_menu(handler);
-        } else if (can_id_buf_len < (sizeof(can_id_buf) - 1)) {
-            can_id_buf[can_id_buf_len++] = c;
-            while (UART_IsTXFIFOFull(handler)) {}
-            UART_TransmitWord(handler, (uint8_t)c);
-        }
-        break;
+            break;
+#   endif
+
+#   ifdef FEATURE_CAN
+        case CLI_STATE_READING_CAN_ID:
+            if (c == '\r' || c == '\n') {
+                if (can_id_buf_len == 0) {
+                    cli_state = CLI_STATE_MENU;
+                    cli_print_menu(handler);
+                    break;
+                }
+                can_id_buf[can_id_buf_len] = '\0';
+                apply_can_filter(handler);
+                cli_state = CLI_STATE_MENU;
+            } else if (!isxdigit((unsigned char)c)) {
+                uart_send_string(handler, "\r\n[Error] Hex digits only.\r\n");
+                cli_state = CLI_STATE_MENU;
+                cli_print_menu(handler);
+            } else if (can_id_buf_len < (sizeof(can_id_buf) - 1)) {
+                can_id_buf[can_id_buf_len++] = c;
+                while (UART_IsTXFIFOFull(handler)) {}
+                UART_TransmitWord(handler, (uint8_t)c);
+            }
+            break;
 #   endif
     }
 }

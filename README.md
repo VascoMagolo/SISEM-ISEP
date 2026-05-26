@@ -30,6 +30,8 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 
 | Option         | Action                               |
 | -------------- | ------------------------------------ |
+| `↵`            | Utility carriage return (<CR>)       |
+| `0`            | Exit                                 |
 | `1`            | Read potentiometer ADC value         |
 | `2`            | Set LED blink period (ms, 100–10000) |
 | `2a` → `2000↵` | Preset: 2 s period                   |
@@ -40,7 +42,11 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 | `5`            | Set CAN RX filter (hex CAN ID)       |
 | `5a` → `4c0↵`  | Preset: filter Group 3 (`0x4C0`)     |
 | `5b` → `4c3↵`  | Preset: filter Group 5 (`0x4C3`)     |
-| `6`            | Exit                                 |
+| `5c` → `7ff↵`  | Preset: filter other (change ID)     |
+| `6`            | Change LCD Mode                      |
+| `6a` → `0`     | Preset: OFF                          |
+| `6b` → `1`     | Preset: AHT10 info (temp/hum)        |
+| `6c` → `2`     | Preset: Potentiometer info           |
 
 ## CAN Bus
 
