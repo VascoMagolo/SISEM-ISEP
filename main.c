@@ -97,6 +97,7 @@ int main(void) {
                     if (++lcd_pot_ticks >= 10) {
                         lcd_pot_ticks = 0;
                         char buf[17];
+                        lcd_clear(&I2C_MASTER_0);
                         snprintf(buf, sizeof(buf), "Pot: %u", potentiometer_value);
                         lcd_write(&I2C_MASTER_0, 1, buf);
                     }
@@ -115,10 +116,13 @@ int main(void) {
                 cli_process_can_rx(&UART_0, can_id_rx, data_rx);
 #               ifdef FEATURE_LCD
                     if (lcd_mode == LCD_MODE_SENSOR) {
+                        float rx_temp, rx_hum;
+                        can_decode_sensor(data_rx, &rx_temp, &rx_hum);
                         char buf[17];
+                        lcd_clear(&I2C_MASTER_0);
                         snprintf(buf, sizeof(buf), "CAN ID: 0x%03X", can_id_rx);
                         lcd_write(&I2C_MASTER_0, 1, buf);
-                        snprintf(buf, sizeof(buf), "T:%.1fC H:%.1f%%", temperature, humidity);
+                        snprintf(buf, sizeof(buf), "T:%.1fC H:%.1f%%", rx_temp, rx_hum);
                         lcd_write(&I2C_MASTER_0, 2, buf);
                     }
 #               endif

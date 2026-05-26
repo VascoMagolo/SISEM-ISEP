@@ -210,7 +210,7 @@ void cli_process_char(const UART_t *const handler, char c) {
             case '1':
                 lcd_mode = LCD_MODE_SENSOR;
                 lcd_clear(&I2C_MASTER_0);
-                lcd_write(&I2C_MASTER_0, 1, "Waiting AHT10...");
+                lcd_write(&I2C_MASTER_0, 1, "Waiting CAN RX..");
                 uart_send_string(handler, "\r\nLCD: Sensor mode.\r\n");
                 break;
             case '2':
