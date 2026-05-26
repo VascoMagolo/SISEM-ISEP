@@ -12,6 +12,7 @@ Event-driven bare-metal firmware for the XMC4200. A 10 ms system tick drives all
 - **Potentiometer** value read via ADC, applied to PWM duty cycle
 - **AHT10** temperature and humidity sensor read over I2C
 - **CAN** periodic broadcast of sensor data every 500 ms; receive and parse frames from other groups
+- **LCD** 16x2 display over I2C, mode selectable via CLI (off / last received CAN frame / potentiometer)
 
 ## Feature flags
 
@@ -20,6 +21,7 @@ Hardware modules can be individually enabled or disabled in [`config.h`](config.
 ```c
 #define FEATURE_AHT10  // I2C temperature and humidity sensor
 #define FEATURE_CAN    // CAN bus transmit and receive
+#define FEATURE_LCD    // 16x2 LCD display over I2C
 ```
 
 Commenting out a define removes all related code at compile time - includes, CLI menu options, periodic tasks, and ISR handlers - without touching any other file.
@@ -74,12 +76,14 @@ Cangaroo workspace: [`apps/CAN.cangaroo`](apps/CAN.cangaroo)
 - P14.6
 - GND
 
-### AHT10 Sensor
+### I2C Bus (SCL/P3.0, SDA/P2.5)
 
-- SCL/P3.0
-- SDA/P2.5
-- 5 V
-- GND
+The following devices share the same bus and can be connected in parallel:
+
+- **AHT10** temperature and humidity sensor
+- **LCD** 16x2 display
+
+Power each device independently (5 V / GND).
 
 ### Other connections:
 
