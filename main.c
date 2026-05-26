@@ -93,9 +93,13 @@ int main(void) {
             PWM_SetDutyCycle(&PWM_0, (uint32_t)potentiometer_value * 10000 / 255);
 #           ifdef FEATURE_LCD
                 if (lcd_mode == LCD_MODE_POT) {
-                    char buf[17];
-                    sprintf(buf, "Pot: %u", potentiometer_value);
-                    lcd_write(&I2C_MASTER_0, 1, buf);
+                    static uint8_t lcd_pot_ticks = 0;
+                    if (++lcd_pot_ticks >= 10) {
+                        lcd_pot_ticks = 0;
+                        char buf[17];
+                        snprintf(buf, sizeof(buf), "Pot: %u", potentiometer_value);
+                        lcd_write(&I2C_MASTER_0, 1, buf);
+                    }
                 }
 #           endif
         }
@@ -112,9 +116,9 @@ int main(void) {
 #               ifdef FEATURE_LCD
                     if (lcd_mode == LCD_MODE_SENSOR) {
                         char buf[17];
-                        sprintf(buf, "ID:0x%03X", can_id_rx);
+                        snprintf(buf, sizeof(buf), "CAN ID: 0x%03X", can_id_rx);
                         lcd_write(&I2C_MASTER_0, 1, buf);
-                        sprintf(buf, "T:%dC H:%d%%", (int)temperature, (int)humidity);
+                        snprintf(buf, sizeof(buf), "T:%.1fC H:%.1f%%", temperature, humidity);
                         lcd_write(&I2C_MASTER_0, 2, buf);
                     }
 #               endif

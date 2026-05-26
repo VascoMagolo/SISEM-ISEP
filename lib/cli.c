@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #include "DAVE.h"
@@ -35,9 +36,12 @@
 
     void cli_process_can_rx(const UART_t *const handler, uint16_t can_id, const uint8_t data[8]) {
         if (!can_filter_active || can_id != can_filter_id) return;
+        static uint8_t last_data[8] = { 0 };
+        if (memcmp(data, last_data, 8) == 0) return;
+        memcpy(last_data, data, 8);
         float temp, hum;
         can_decode_sensor(data, &temp, &hum);
-        uart_printf(handler, "\r\n[CAN 0x%03X] Temp: %d C  Hum: %d %%\r\n", can_id, (int)temp, (int)hum);
+        uart_printf(handler, "\r\n[CAN 0x%03X] Temp: %.1f C  Hum: %.1f %%\r\n", can_id, temp, hum);
     }
 
     static void apply_can_filter(const UART_t *const handler) {
@@ -145,8 +149,8 @@ void cli_process_char(const UART_t *const handler, char c) {
                 if (aht10_read(data)) {
                     aht10_parse_humidity(&hum, data);
                     aht10_parse_temperature(&temp, data);
-                    uart_printf(handler, "\r\nTemperature: %d C\r\nHumidity: %d %%\r\n",
-                        (int)temp, (int)hum);
+                    uart_printf(handler, "\r\nTemperature: %.1f C\r\nHumidity: %.1f %%\r\n",
+                        temp, hum);
                 } else {
                     uart_send_string(handler, "\r\n[Error] Sensor busy or not responding.\r\n");
                 }
@@ -206,6 +210,7 @@ void cli_process_char(const UART_t *const handler, char c) {
             case '1':
                 lcd_mode = LCD_MODE_SENSOR;
                 lcd_clear(&I2C_MASTER_0);
+                lcd_write(&I2C_MASTER_0, 1, "Waiting AHT10...");
                 uart_send_string(handler, "\r\nLCD: Sensor mode.\r\n");
                 break;
             case '2':
