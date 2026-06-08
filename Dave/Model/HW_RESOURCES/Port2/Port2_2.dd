@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <ResourceModel:Port xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ResourceModel="http://www.infineon.com/Davex/Resource.ecore" URI="http://resources/0.6.1/port/p/2" description="Port 2" baseAddress="0x48028200">
   <provided xsi:type="ResourceModel:ResourceGroup" name="P2.15 / #25" URI="http://resources/0.6.1/port/p/2/pad/15">
+    <upwardMapList xsi:type="ResourceModel:HWResource" href="../../APPS/UART/v4_1_14/UART_1.app#//@hwResources.1"/>
     <resourcesList name="out_p" requiredResourceUri="http://resources/0.6.1/port/p/2/out/p15"/>
     <resourcesList name="omr_ps" requiredResourceUri="http://resources/0.6.1/port/p/2/omr/ps15"/>
     <resourcesList name="omr_pr" requiredResourceUri="http://resources/0.6.1/port/p/2/omr/pr15"/>
@@ -149,6 +150,7 @@
   <provided xsi:type="ResourceModel:BitField" name="PC15_2_0" URI="http://resources/0.6.1/port/p/2/iocr12/pc15_2_0" value="0" toolTipHelpDescription="Port Control for Port n Pin 12 to 15" defaultValue="0" startPos="27" stopPos="29" accessPermission="rw" maxValue="7" minValue="0"/>
   <provided xsi:type="ResourceModel:BitField" name="PC15_4" URI="http://resources/0.6.1/port/p/2/iocr12/pc15_4" value="0" toolTipHelpDescription="Port Control for Port n Pin 12 to 15" defaultValue="0" startPos="31" stopPos="31" accessPermission="rw" maxValue="1" minValue="0"/>
   <provided xsi:type="ResourceModel:ResourceGroup" name="P2.14 / #26" URI="http://resources/0.6.1/port/p/2/pad/14">
+    <upwardMapList xsi:type="ResourceModel:HWResource" href="../../APPS/UART/v4_1_14/UART_1.app#//@hwResources.2"/>
     <resourcesList name="out_p" requiredResourceUri="http://resources/0.6.1/port/p/2/out/p14"/>
     <resourcesList name="omr_ps" requiredResourceUri="http://resources/0.6.1/port/p/2/omr/ps14"/>
     <resourcesList name="omr_pr" requiredResourceUri="http://resources/0.6.1/port/p/2/omr/pr14"/>

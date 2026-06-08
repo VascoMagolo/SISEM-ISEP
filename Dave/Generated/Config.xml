@@ -146,16 +146,6 @@
                 <Path>\Dave\Generated\UART\uart_conf.c</Path>
                 <Type>C File</Type>
             </Source_File>
-            <Source_File>
-                <File_Name>watchdog.c</File_Name>
-                <Path>\Dave\Generated\WATCHDOG\watchdog.c</Path>
-                <Type>C File</Type>
-            </Source_File>
-            <Source_File>
-                <File_Name>watchdog_conf.c</File_Name>
-                <Path>\Dave\Generated\WATCHDOG\watchdog_conf.c</Path>
-                <Type>C File</Type>
-            </Source_File>
         </Source_Files>
         <Header_Files>
             <Header_File>
@@ -361,21 +351,6 @@
             <Header_File>
                 <File_Name>uart_extern.h</File_Name>
                 <Path>\Dave\Generated\UART\uart_extern.h</Path>
-                <Type>H File</Type>
-            </Header_File>
-            <Header_File>
-                <File_Name>watchdog.h</File_Name>
-                <Path>\Dave\Generated\WATCHDOG\watchdog.h</Path>
-                <Type>H File</Type>
-            </Header_File>
-            <Header_File>
-                <File_Name>watchdog_conf.h</File_Name>
-                <Path>\Dave\Generated\WATCHDOG\watchdog_conf.h</Path>
-                <Type>H File</Type>
-            </Header_File>
-            <Header_File>
-                <File_Name>watchdog_extern.h</File_Name>
-                <Path>\Dave\Generated\WATCHDOG\watchdog_extern.h</Path>
                 <Type>H File</Type>
             </Header_File>
         </Header_Files>

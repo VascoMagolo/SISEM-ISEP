@@ -85,7 +85,7 @@
 /*
  * CCU4 Compare mode configuration
  */
-const XMC_CCU4_SLICE_COMPARE_CONFIG_t PWM_0_compare_config =
+const XMC_CCU4_SLICE_COMPARE_CONFIG_t PWM_POTENTIOMETER_compare_config =
 {
   .timer_mode 		   = (uint32_t) XMC_CCU4_SLICE_TIMER_COUNT_MODE_EA,
   .monoshot   		   = (uint32_t) false,
@@ -104,7 +104,7 @@ const XMC_CCU4_SLICE_COMPARE_CONFIG_t PWM_0_compare_config =
 /*
  * GPIO Related configuration for PWM output 
  */
-const XMC_GPIO_CONFIG_t  PWM_0_gpio_out_config	= 
+const XMC_GPIO_CONFIG_t  PWM_POTENTIOMETER_gpio_out_config	= 
 {
   .mode                = XMC_GPIO_MODE_OUTPUT_PUSH_PULL_ALT3,
   .output_level        = XMC_GPIO_OUTPUT_LEVEL_LOW,
@@ -114,14 +114,14 @@ const XMC_GPIO_CONFIG_t  PWM_0_gpio_out_config	=
 /*
  * APP Handle for the PWM
  */
-PWM_t PWM_0 =
+PWM_t PWM_POTENTIOMETER =
 {
   .global_ccu4_handle             = (GLOBAL_CCU4_t*)&GLOBAL_CCU4_1,
   .ccu4_kernel_ptr                = (XMC_CCU4_MODULE_t*) CCU41_BASE,
   .ccu4_slice_ptr                 = (XMC_CCU4_SLICE_t*)  CCU41_CC42,
-  .ccu4_slice_config_ptr          = &PWM_0_compare_config,
+  .ccu4_slice_config_ptr          = &PWM_POTENTIOMETER_compare_config,
   .gpio_out_port                  = XMC_GPIO_PORT2,
-  .gpio_out_config                = &PWM_0_gpio_out_config,
+  .gpio_out_config                = &PWM_POTENTIOMETER_gpio_out_config,
   .compare_value                  = 20000U,
   .period_value                   = 39999U,
   .duty_cycle                     = 5000U,

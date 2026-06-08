@@ -56,7 +56,7 @@ bool aht10_read(uint8_t data[6]) {
 
 	// send measurement trigger
 	i2c_tx_completion = 0;
-	I2C_MASTER_Transmit(&I2C_MASTER_0, true, AHT10_ADDRESS, cmd, 3, true);
+	I2C_MASTER_Transmit(&I2C_MASTER, true, AHT10_ADDRESS, cmd, 3, true);
 	while (i2c_tx_completion == 0) {
 		// wait for i2c bus
 	}
@@ -65,7 +65,7 @@ bool aht10_read(uint8_t data[6]) {
 
 	// read 6 bytes of data
 	i2c_rx_completion = 0;
-	I2C_MASTER_Receive(&I2C_MASTER_0, true, AHT10_ADDRESS, data, 6, true, true);
+	I2C_MASTER_Receive(&I2C_MASTER, true, AHT10_ADDRESS, data, 6, true, true);
 	while (i2c_rx_completion == 0) {
 		// wait for i2c bus
 	}

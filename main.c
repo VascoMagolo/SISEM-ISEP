@@ -25,6 +25,10 @@
      static volatile bool can_sensor_tick = false;
 # endif
 
+# ifdef FEATURE_GPS
+#    include "lib/gps.h"
+# endif
+
 volatile uint16_t potentiometer_value = 0;
 volatile bool     led_blinking        = false;
 volatile uint32_t led_tick_interval   = 100;  // 100 ticks * 10ms = 1000ms default
@@ -64,42 +68,34 @@ int main(void) {
         return 1;
     }
 
-    TIMER_Stop(&TIMER_0);
-    TIMER_Clear(&TIMER_0);
-    TIMER_SetTimeInterval(&TIMER_0, TIMER_MS(TICK_MS));
-    TIMER_Start(&TIMER_0);
-
-    // The UART APP configures an RX FIFO interrupt (IRQn 89) whose handler
-    // calls UART_lReceiveHandler. Since we never call UART_Receive(), that
-    // handler does nothing but the interrupt would keep re-asserting while
-    // bytes sit in the FIFO. Disable it and poll the FIFO directly instead.
-    NVIC_DisableIRQ((IRQn_Type)89);
+    TIMER_Stop(&TIMER_TICK);
+    TIMER_Clear(&TIMER_TICK);
+    TIMER_SetTimeInterval(&TIMER_TICK, TIMER_MS(TICK_MS));
+    TIMER_Start(&TIMER_TICK);
 
     ADC_MEASUREMENT_StartConversion(&ADC_POTENTIOMETER);
 
 #   ifdef FEATURE_LCD
-        lcd_init(&I2C_MASTER_0);
+        lcd_init(&I2C_MASTER);
 #   endif
 
-    cli_print_header(&UART_0);
-    cli_print_menu(&UART_0);
+    cli_print_header(&UART_CLI);
+    cli_print_menu(&UART_CLI);
 
     while (1) {
-        WATCHDOG_Service();
-
         if (adc_tick) {
             adc_tick = false;
             potentiometer_value = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
-            PWM_SetDutyCycle(&PWM_0, (uint32_t)potentiometer_value * 10000 / 255);
+            PWM_SetDutyCycle(&PWM_POTENTIOMETER, (uint32_t)potentiometer_value * 10000 / 255);
 #           ifdef FEATURE_LCD
                 if (lcd_mode == LCD_MODE_POT) {
                     static uint8_t lcd_pot_ticks = 0;
                     if (++lcd_pot_ticks >= 10) {
                         lcd_pot_ticks = 0;
                         char buf[17];
-                        lcd_clear(&I2C_MASTER_0);
+                        lcd_clear(&I2C_MASTER);
                         snprintf(buf, sizeof(buf), "Pot: %u", potentiometer_value);
-                        lcd_write(&I2C_MASTER_0, 1, buf);
+                        lcd_write(&I2C_MASTER, 1, buf);
                     }
                 }
 #           endif
@@ -113,17 +109,17 @@ int main(void) {
 #       ifdef FEATURE_CAN
             if (flag_data_rx) {
                 flag_data_rx = 0;
-                cli_process_can_rx(&UART_0, can_id_rx, data_rx);
+                cli_process_can_rx(&UART_CLI, can_id_rx, data_rx);
 #               ifdef FEATURE_LCD
                     if (lcd_mode == LCD_MODE_SENSOR) {
                         float rx_temp, rx_hum;
                         can_decode_sensor(data_rx, &rx_temp, &rx_hum);
                         char buf[17];
-                        lcd_clear(&I2C_MASTER_0);
+                        lcd_clear(&I2C_MASTER);
                         snprintf(buf, sizeof(buf), "CAN ID: 0x%03X", can_id_rx);
-                        lcd_write(&I2C_MASTER_0, 1, buf);
+                        lcd_write(&I2C_MASTER, 1, buf);
                         snprintf(buf, sizeof(buf), "T:%.1fC H:%.1f%%", rx_temp, rx_hum);
-                        lcd_write(&I2C_MASTER_0, 2, buf);
+                        lcd_write(&I2C_MASTER, 2, buf);
                     }
 #               endif
             }
@@ -135,15 +131,69 @@ int main(void) {
                     if (aht10_read(raw)) {
                         aht10_parse_temperature((float*)&temperature, raw);
                         aht10_parse_humidity((float*)&humidity, raw);
-                        can_send_sensor(&CAN_NODE_0, CAN_ID_GROUP, temperature, humidity);
+                        can_send_sensor(&CAN_NODE, CAN_ID_GROUP, temperature, humidity);
                     }
 #               endif
             }
 #       endif
 
-        while (!UART_IsRXFIFOEmpty(&UART_0)) {
-            char c = (char)UART_GetReceivedWord(&UART_0);
-            cli_process_char(&UART_0, c);
+#       ifdef FEATURE_GPS
+            while (!UART_IsRXFIFOEmpty(&UART_GPS)) {
+                gps_feed((char)UART_GetReceivedWord(&UART_GPS));
+            }
+
+            if (gps_updated) {
+                gps_updated = false;
+                if (gps_data.fix_valid) {
+                    uart_printf(&UART_CLI,
+                        "\r\n[GPS] %02u:%02u:%02uZ  Lat: %.6f  Lon: %.6f  Satellites: %u\r\n",
+                        gps_data.hour, gps_data.minute, gps_data.second,
+                        gps_data.latitude, gps_data.longitude, gps_data.satellites);
+#                   ifdef FEATURE_CAN
+                        can_send_gps(&CAN_NODE, CAN_ID_GROUP, gps_data.latitude, gps_data.longitude);
+#                   endif
+                } else {
+                    uart_printf(&UART_CLI,
+                        "\r\n[GPS] %02u:%02u:%02uZ  No fix  Satellites: %u\r\n",
+                        gps_data.hour, gps_data.minute, gps_data.second,
+                        gps_data.satellites);
+                }
+#               ifdef FEATURE_LCD
+                    if (lcd_mode == LCD_MODE_GPS) {
+                        static bool    last_fix  = false;
+                        static float   last_lat  = 0.0f;
+                        static float   last_lon  = 0.0f;
+                        static uint8_t last_sats = 0xFF;
+                        char buf[17];
+                        if (gps_data.fix_valid) {
+                            if (!last_fix || gps_data.latitude != last_lat || gps_data.longitude != last_lon) {
+                                last_fix = true;
+                                last_lat = gps_data.latitude;
+                                last_lon = gps_data.longitude;
+                                snprintf(buf, sizeof(buf), "Lat: %.6f", gps_data.latitude);
+                                lcd_clear(&I2C_MASTER);
+                                lcd_write(&I2C_MASTER, 1, buf);
+                                snprintf(buf, sizeof(buf), "Lon: %.6f", gps_data.longitude);
+                                lcd_write(&I2C_MASTER, 2, buf);
+                            }
+                        } else {
+                            if (last_fix || gps_data.satellites != last_sats) {
+                                last_fix  = false;
+                                last_sats = gps_data.satellites;
+                                lcd_clear(&I2C_MASTER);
+                                lcd_write(&I2C_MASTER, 1, "No GPS fix");
+                                snprintf(buf, sizeof(buf), "Satellites: %u", gps_data.satellites);
+                                lcd_write(&I2C_MASTER, 2, buf);
+                            }
+                        }
+                    }
+#               endif
+            }
+#       endif
+
+        while (!UART_IsRXFIFOEmpty(&UART_CLI)) {
+            char c = (char)UART_GetReceivedWord(&UART_CLI);
+            cli_process_char(&UART_CLI, c);
         }
     }
 }

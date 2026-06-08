@@ -60,11 +60,11 @@ extern "C" {
  * MACROS
  **********************************************************************************************************************/
 
-#define I2C_MASTER_0_TX_HANDLER	IRQ_Hdlr_85
+#define I2C_MASTER_TX_HANDLER	IRQ_Hdlr_88
 
-#define I2C_MASTER_0_RX_HANDLER	IRQ_Hdlr_87
+#define I2C_MASTER_RX_HANDLER	IRQ_Hdlr_89
 
-extern I2C_MASTER_t I2C_MASTER_0;
+extern I2C_MASTER_t I2C_MASTER;
 extern void endTxCallback(void);
 
 extern void endRxCallback(void);

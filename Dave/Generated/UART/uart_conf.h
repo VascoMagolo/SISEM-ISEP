@@ -61,10 +61,10 @@
 #define UART_PATCH_VERSION (14U)
 
 
-#define UART_0_TX_HANDLER  IRQ_Hdlr_88
-#define UART_0_RX_HANDLER  IRQ_Hdlr_89
+#define UART_CLI_TX_HANDLER  IRQ_Hdlr_87
+#define UART_GPS_TX_HANDLER  IRQ_Hdlr_90
 #define UART_TX_INTERRUPT_USED
-#define UART_RX_INTERRUPT_USED
+#define UART_RX_DIRECT_USED
 #define UART_IRQ_USED
 
 #endif /* End of UART_CONF_H */

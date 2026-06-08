@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ASCII"?>
-<ResourceModel:App xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ResourceModel="http://www.infineon.com/Davex/Resource.ecore" name="I2C_MASTER" URI="http://resources/4.1.34/app/I2C_MASTER/0" description="Configures a USIC channel to perform transfer &amp; receive operations using I2C protocol." mode="NOTSHARABLE" version="4.1.34" minDaveVersion="4.0.0" instanceLabel="I2C_MASTER_0" appLabel="">
+<ResourceModel:App xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ResourceModel="http://www.infineon.com/Davex/Resource.ecore" name="I2C_MASTER" URI="http://resources/4.1.34/app/I2C_MASTER/0" description="Configures a USIC channel to perform transfer &amp; receive operations using I2C protocol." mode="NOTSHARABLE" version="4.1.34" minDaveVersion="4.0.0" instanceLabel="I2C_MASTER" appLabel="">
   <properties provideInit="true"/>
   <virtualSignals name="DMA Transfer complete event" URI="http://resources/4.1.34/app/I2C_MASTER/0/vs_dma_interrupt_tx" hwSignal="dma_int" hwResource="//@hwResources.6" required="false"/>
   <virtualSignals name="DMA Transfer complete event" URI="http://resources/4.1.34/app/I2C_MASTER/0/vs_dma_interrupt_rx" hwSignal="dma_int" hwResource="//@hwResources.7" required="false"/>
@@ -38,10 +38,10 @@
     <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/USIC0/USIC0_0.dd#//@provided.43"/>
   </hwResources>
   <hwResources name="NVIC Node Tx" URI="http://resources/4.1.34/app/I2C_MASTER/0/hwres_nvic_node_i2c_tx" resourceGroupUri="peripheral/cpu/0/nvic/interrupt/*" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*">
-    <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/CPU/CPU_0.dd#//@provided.25"/>
+    <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/CPU/CPU_0.dd#//@provided.27"/>
   </hwResources>
   <hwResources name="NVIC Node Rx" URI="http://resources/4.1.34/app/I2C_MASTER/0/hwres_nvic_node_i2c_rx" resourceGroupUri="peripheral/cpu/0/nvic/interrupt/*" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*">
-    <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/CPU/CPU_0.dd#//@provided.17"/>
+    <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/CPU/CPU_0.dd#//@provided.19"/>
   </hwResources>
   <hwResources name="NVIC Node Error" URI="http://resources/4.1.34/app/I2C_MASTER/0/hwres_nvic_node_i2c_error" resourceGroupUri="" required="false" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*"/>
   <hwResources name="SDA" URI="http://resources/4.1.34/app/I2C_MASTER/0/hwres_i2c_sda" resourceGroupUri="port/p/*/pad/*" mResGrpUri="port/p/*/pad/*">

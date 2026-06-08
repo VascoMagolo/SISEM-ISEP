@@ -88,47 +88,47 @@ void I2C_MASTER_TransmitHandler(I2C_MASTER_t * const handle);
  */
 void I2C_MASTER_ReceiveHandler(I2C_MASTER_t * const handle);
 
-void I2C_MASTER_0_init(void);
+void I2C_MASTER_init(void);
 #if (I2C_MASTER_DMA_TX_ENABLED == 1)
-void I2C_MASTER_0_dma_tx_handler(XMC_DMA_CH_EVENT_t event);
+void I2C_MASTER_dma_tx_handler(XMC_DMA_CH_EVENT_t event);
 #endif
 #if (I2C_MASTER_DMA_RX_ENABLED == 1)
-void I2C_MASTER_0_dma_rx_handler(XMC_DMA_CH_EVENT_t event);
+void I2C_MASTER_dma_rx_handler(XMC_DMA_CH_EVENT_t event);
 #endif
-  static const XMC_GPIO_CONFIG_t I2C_MASTER_0_sda_pin_config   =
+  static const XMC_GPIO_CONFIG_t I2C_MASTER_sda_pin_config   =
   { 
     .mode = XMC_GPIO_MODE_OUTPUT_OPEN_DRAIN_ALT2,
     .output_level   = XMC_GPIO_OUTPUT_LEVEL_HIGH,
   }; 
-  static const XMC_GPIO_CONFIG_t I2C_MASTER_0_scl_pin_config   =
+  static const XMC_GPIO_CONFIG_t I2C_MASTER_scl_pin_config   =
   { 
     .mode = XMC_GPIO_MODE_OUTPUT_OPEN_DRAIN_ALT2,
     .output_level  = XMC_GPIO_OUTPUT_LEVEL_HIGH,
   }; 
-const XMC_I2C_CH_CONFIG_t I2C_MASTER_0_channel_config =
+const XMC_I2C_CH_CONFIG_t I2C_MASTER_channel_config =
 {
   .baudrate = (uint32_t)(100000U),
   .address  = 0
 };
 
-static void I2C_MASTER_0_disable_io(void)
+static void I2C_MASTER_disable_io(void)
 {
   XMC_GPIO_SetMode((XMC_GPIO_PORT_t *)PORT2_BASE, (uint8_t)5, XMC_GPIO_MODE_INPUT_TRISTATE);
   XMC_GPIO_SetMode((XMC_GPIO_PORT_t *)PORT3_BASE, (uint8_t)0, XMC_GPIO_MODE_INPUT_TRISTATE);
 }
 
-static void I2C_MASTER_0_enable_io(void)
+static void I2C_MASTER_enable_io(void)
 {
-  XMC_GPIO_SetMode((XMC_GPIO_PORT_t *)PORT2_BASE, (uint8_t)5, I2C_MASTER_0_sda_pin_config.mode);
-  XMC_GPIO_SetMode((XMC_GPIO_PORT_t *)PORT3_BASE, (uint8_t)0, I2C_MASTER_0_scl_pin_config.mode);
+  XMC_GPIO_SetMode((XMC_GPIO_PORT_t *)PORT2_BASE, (uint8_t)5, I2C_MASTER_sda_pin_config.mode);
+  XMC_GPIO_SetMode((XMC_GPIO_PORT_t *)PORT3_BASE, (uint8_t)0, I2C_MASTER_scl_pin_config.mode);
 }
 
-const I2C_MASTER_CONFIG_t I2C_MASTER_0_config =
+const I2C_MASTER_CONFIG_t I2C_MASTER_config =
 {
-  .brg_config = &I2C_MASTER_0_channel_config,
-  .fptr_i2c_config = I2C_MASTER_0_init,
-  .fptr_i2c_enable_io = I2C_MASTER_0_enable_io,
-  .fptr_i2c_disable_io = I2C_MASTER_0_disable_io,
+  .brg_config = &I2C_MASTER_channel_config,
+  .fptr_i2c_config = I2C_MASTER_init,
+  .fptr_i2c_enable_io = I2C_MASTER_enable_io,
+  .fptr_i2c_disable_io = I2C_MASTER_disable_io,
   .tx_cbhandler = endTxCallback,
   .rx_cbhandler = endRxCallback,
   .nack_cbhandler = NULL,
@@ -140,41 +140,41 @@ const I2C_MASTER_CONFIG_t I2C_MASTER_0_config =
  
   .rxFIFO_size = XMC_USIC_CH_FIFO_SIZE_16WORDS,
   
-#if defined(I2C_MASTER_0_TX_IRQN)
-  .tx_irqn = I2C_MASTER_0_TX_IRQN,
+#if defined(I2C_MASTER_TX_IRQN)
+  .tx_irqn = I2C_MASTER_TX_IRQN,
 #else
   .tx_irqn = -1,
 #endif
 
-#if defined(I2C_MASTER_0_RX_IRQN)
-  .rx_irqn = I2C_MASTER_0_RX_IRQN
+#if defined(I2C_MASTER_RX_IRQN)
+  .rx_irqn = I2C_MASTER_RX_IRQN
 #else
   .rx_irqn = -1
 #endif
 
 };
-I2C_MASTER_RUNTIME_t I2C_MASTER_0_runtime =
+I2C_MASTER_RUNTIME_t I2C_MASTER_runtime =
 {
-  .tx_ack_sr = 0x1U,
+  .tx_ack_sr = 0x4U,
   .tx_busy = false,
-  .rx_sr = 0x3U,
+  .rx_sr = 0x5U,
   .rx_busy = false,
   .bus_acquired = false
 };
 
-I2C_MASTER_t I2C_MASTER_0 =
+I2C_MASTER_t I2C_MASTER =
 {
   .channel = XMC_I2C0_CH1,
-  .config = &I2C_MASTER_0_config,
-  .runtime = &I2C_MASTER_0_runtime,
+  .config = &I2C_MASTER_config,
+  .runtime = &I2C_MASTER_runtime,
 };
 
-void I2C_MASTER_0_init(void)
+void I2C_MASTER_init(void)
 {
  
   const uint32_t tx_fifo_events = (uint32_t)(0);
   const uint32_t rx_fifo_events = (uint32_t)(XMC_USIC_CH_RXFIFO_EVENT_CONF_ALTERNATE | XMC_USIC_CH_RXFIFO_EVENT_CONF_STANDARD);
-  XMC_I2C_CH_Init(XMC_I2C0_CH1, &I2C_MASTER_0_channel_config);
+  XMC_I2C_CH_Init(XMC_I2C0_CH1, &I2C_MASTER_channel_config);
 
   XMC_USIC_CH_SetInputSource(XMC_I2C0_CH1, XMC_USIC_CH_INPUT_DX0, 1);
   XMC_USIC_CH_SetInputSource(XMC_I2C0_CH1, XMC_USIC_CH_INPUT_DX1, 1);
@@ -186,7 +186,7 @@ void I2C_MASTER_0_init(void)
                                (uint32_t)1);
   XMC_USIC_CH_TXFIFO_SetInterruptNodePointer(XMC_I2C0_CH1,
                                                XMC_USIC_CH_TXFIFO_INTERRUPT_NODE_POINTER_STANDARD,
-                                             ((uint32_t)1));
+                                             ((uint32_t)4));
   XMC_USIC_CH_TXFIFO_EnableEvent(XMC_I2C0_CH1, tx_fifo_events);
   /* configure i2c rx fifo */
   XMC_USIC_CH_RXFIFO_Configure(XMC_I2C0_CH1,
@@ -195,31 +195,31 @@ void I2C_MASTER_0_init(void)
                                 (uint32_t)(15));
   XMC_USIC_CH_RXFIFO_SetInterruptNodePointer(XMC_I2C0_CH1,
                                                XMC_USIC_CH_RXFIFO_INTERRUPT_NODE_POINTER_STANDARD,
-                                              ((uint32_t)0x3));
+                                              ((uint32_t)0x5));
   XMC_USIC_CH_RXFIFO_SetInterruptNodePointer(XMC_I2C0_CH1,
                                                XMC_USIC_CH_RXFIFO_INTERRUPT_NODE_POINTER_ALTERNATE,
-                                              ((uint32_t)0x3));
+                                              ((uint32_t)0x5));
   XMC_USIC_CH_RXFIFO_EnableEvent(XMC_I2C0_CH1, rx_fifo_events);
   XMC_USIC_CH_SetInterruptNodePointer(XMC_I2C0_CH1,
                                       XMC_USIC_CH_INTERRUPT_NODE_POINTER_PROTOCOL,
                                        ((uint32_t)0));
   XMC_I2C_CH_Start(XMC_I2C0_CH1);
 
-  XMC_GPIO_Init((XMC_GPIO_PORT_t *)PORT2_BASE, (uint8_t)5, &I2C_MASTER_0_sda_pin_config);
-  XMC_GPIO_Init((XMC_GPIO_PORT_t *)PORT3_BASE, (uint8_t)0, &I2C_MASTER_0_scl_pin_config);
+  XMC_GPIO_Init((XMC_GPIO_PORT_t *)PORT2_BASE, (uint8_t)5, &I2C_MASTER_sda_pin_config);
+  XMC_GPIO_Init((XMC_GPIO_PORT_t *)PORT3_BASE, (uint8_t)0, &I2C_MASTER_scl_pin_config);
 /* Tx interrupt priority settings */
-  NVIC_SetPriority((IRQn_Type)85, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),63,0));
-  NVIC_EnableIRQ((IRQn_Type)85);/* Rx interrupt priority settings */
-  NVIC_SetPriority((IRQn_Type)87, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),63,0));
-  NVIC_EnableIRQ((IRQn_Type)87);}
+  NVIC_SetPriority((IRQn_Type)88, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),63,0));
+  NVIC_EnableIRQ((IRQn_Type)88);/* Rx interrupt priority settings */
+  NVIC_SetPriority((IRQn_Type)89, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),63,0));
+  NVIC_EnableIRQ((IRQn_Type)89);}
 /*Transmit ISR*/
-void I2C_MASTER_0_TX_HANDLER()
+void I2C_MASTER_TX_HANDLER()
 {
-  I2C_MASTER_TransmitHandler(&I2C_MASTER_0);
+  I2C_MASTER_TransmitHandler(&I2C_MASTER);
 }
 /*Receive ISR*/
-void I2C_MASTER_0_RX_HANDLER()
+void I2C_MASTER_RX_HANDLER()
 {
-  I2C_MASTER_ReceiveHandler(&I2C_MASTER_0);
+  I2C_MASTER_ReceiveHandler(&I2C_MASTER);
 }
 

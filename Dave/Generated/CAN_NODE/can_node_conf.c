@@ -69,13 +69,13 @@
 **********************************************************************************************************************/
 
 /**< GPIO configuration for output pin */
-static const CAN_NODE_GPIO_t CAN_NODE_0_gpio_out = 
+static const CAN_NODE_GPIO_t CAN_NODE_gpio_out = 
 {
   .port = (XMC_GPIO_PORT_t *)PORT2_BASE,
   .pin  = (uint8_t)0
 };
 
-static const XMC_GPIO_CONFIG_t  CAN_NODE_0_gpio_out_config =
+static const XMC_GPIO_CONFIG_t  CAN_NODE_gpio_out_config =
 {
   .mode              = XMC_GPIO_MODE_OUTPUT_PUSH_PULL_ALT1,
   .output_level      = XMC_GPIO_OUTPUT_LEVEL_HIGH 
@@ -86,19 +86,19 @@ static const XMC_GPIO_CONFIG_t  CAN_NODE_0_gpio_out_config =
      
 
 /**< GPIO configuration for input pin */
-static const CAN_NODE_GPIO_t CAN_NODE_0_gpio_in = {
+static const CAN_NODE_GPIO_t CAN_NODE_gpio_in = {
   .port = (XMC_GPIO_PORT_t *)PORT14_BASE,
   .pin  = (uint8_t)3
 };
 
-static const XMC_GPIO_CONFIG_t  CAN_NODE_0_gpio_in_config =
+static const XMC_GPIO_CONFIG_t  CAN_NODE_gpio_in_config =
 {
   .mode = XMC_GPIO_MODE_INPUT_TRISTATE    
 };
 
     
 /* CAN_NODE Bit Time Configuration */
-static const XMC_CAN_NODE_NOMINAL_BIT_TIME_CONFIG_t  CAN_NODE_0_BitTimeConfig = {
+static const XMC_CAN_NODE_NOMINAL_BIT_TIME_CONFIG_t  CAN_NODE_BitTimeConfig = {
   .can_frequency = (uint32_t)8.0E7, 
   .baudrate      = (uint32_t)(500 * 1000),   
   .sample_point  = (uint16_t)(80 * 100),
@@ -107,7 +107,7 @@ static const XMC_CAN_NODE_NOMINAL_BIT_TIME_CONFIG_t  CAN_NODE_0_BitTimeConfig = 
 
   
 /* Node Service request */
-static const CAN_NODE_SR_t CAN_NODE_0_sr = {
+static const CAN_NODE_SR_t CAN_NODE_sr = {
   .alert_event_sr      = 0U,
   
   .lec_event_sr        = 0U,
@@ -118,7 +118,7 @@ static const CAN_NODE_SR_t CAN_NODE_0_sr = {
   
 };
   
-static XMC_CAN_MO_t  CAN_NODE_0_LMO_01 = {
+static XMC_CAN_MO_t  CAN_NODE_LMO_01 = {
           
   .can_mo_type      = XMC_CAN_MO_TYPE_RECMSGOBJ,
   .can_id_mode      = XMC_CAN_FRAME_TYPE_STANDARD_11BITS,
@@ -136,9 +136,9 @@ static XMC_CAN_MO_t  CAN_NODE_0_LMO_01 = {
   .can_data[0]      = 0x0U 
 };
       
-const CAN_NODE_LMO_t CAN_NODE_0_LMO_01_Config = {
+const CAN_NODE_LMO_t CAN_NODE_LMO_01_Config = {
         
-  .mo_ptr     = (XMC_CAN_MO_t*)&CAN_NODE_0_LMO_01,    
+  .mo_ptr     = (XMC_CAN_MO_t*)&CAN_NODE_LMO_01,    
          
   .number  = 35U,
        
@@ -148,7 +148,7 @@ const CAN_NODE_LMO_t CAN_NODE_0_LMO_01_Config = {
   .rx_event_enable = true
 };
       
-static XMC_CAN_MO_t  CAN_NODE_0_LMO_02 = {
+static XMC_CAN_MO_t  CAN_NODE_LMO_02 = {
           
   .can_mo_type      = XMC_CAN_MO_TYPE_TRANSMSGOBJ,
   .can_id_mode      = XMC_CAN_FRAME_TYPE_STANDARD_11BITS,
@@ -166,9 +166,9 @@ static XMC_CAN_MO_t  CAN_NODE_0_LMO_02 = {
   .can_data[0]      = 0x0U 
 };
       
-const CAN_NODE_LMO_t CAN_NODE_0_LMO_02_Config = {
+const CAN_NODE_LMO_t CAN_NODE_LMO_02_Config = {
         
-  .mo_ptr     = (XMC_CAN_MO_t*)&CAN_NODE_0_LMO_02,    
+  .mo_ptr     = (XMC_CAN_MO_t*)&CAN_NODE_LMO_02,    
          
   .number  = 34U,
        
@@ -180,24 +180,24 @@ const CAN_NODE_LMO_t CAN_NODE_0_LMO_02_Config = {
       
 /* CAN_NODE init Structure configuration */
 
-const CAN_NODE_t  CAN_NODE_0 = 
+const CAN_NODE_t  CAN_NODE = 
 {
   .global_ptr        = (GLOBAL_CAN_t *)&GLOBAL_CAN_0,
   .node_ptr          = (CAN_NODE_TypeDef*)CAN_NODE0,
-  .baudrate_config   = (XMC_CAN_NODE_NOMINAL_BIT_TIME_CONFIG_t*)&CAN_NODE_0_BitTimeConfig,
+  .baudrate_config   = (XMC_CAN_NODE_NOMINAL_BIT_TIME_CONFIG_t*)&CAN_NODE_BitTimeConfig,
   
-  .gpio_out          = &CAN_NODE_0_gpio_out,
-  .gpio_out_config   = &CAN_NODE_0_gpio_out_config,  
-  .gpio_in           = &CAN_NODE_0_gpio_in,
-  .gpio_in_config    = &CAN_NODE_0_gpio_in_config,
+  .gpio_out          = &CAN_NODE_gpio_out,
+  .gpio_out_config   = &CAN_NODE_gpio_out_config,  
+  .gpio_in           = &CAN_NODE_gpio_in,
+  .gpio_in_config    = &CAN_NODE_gpio_in_config,
   .rx_signal         = XMC_CAN_NODE_RECEIVE_INPUT_RXDCB,
     
-  .node_sr_ptr       = (CAN_NODE_SR_t*)&CAN_NODE_0_sr,
+  .node_sr_ptr       = (CAN_NODE_SR_t*)&CAN_NODE_sr,
   .lmobj_ptr         = { 
   
-    (CAN_NODE_LMO_t*)&CAN_NODE_0_LMO_01_Config
+    (CAN_NODE_LMO_t*)&CAN_NODE_LMO_01_Config
         , 
-    (CAN_NODE_LMO_t*)&CAN_NODE_0_LMO_02_Config
+    (CAN_NODE_LMO_t*)&CAN_NODE_LMO_02_Config
         ,  
       NULL
       ,  

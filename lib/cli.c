@@ -21,8 +21,14 @@
     static void print_lcd_menu(const UART_t *const handler) {
         uart_send_string(handler, "\r\nLCD mode:\r\n"
             " 0 - Off\r\n"
-            " 1 - Sensor (Temp + Humidity)\r\n"
-            " 2 - Potentiometer\r\n");
+#           ifdef FEATURE_CAN
+                " 1 - Sensor (Temp + Humidity)\r\n"
+#           endif
+            " 2 - Potentiometer\r\n"
+#           ifdef FEATURE_GPS
+                " 3 - GPS\r\n"
+#           endif
+        );
     }
 # endif
 
@@ -204,20 +210,30 @@ void cli_process_char(const UART_t *const handler, char c) {
             switch (c) {
             case '0':
                 lcd_mode = LCD_MODE_OFF;
-                lcd_clear(&I2C_MASTER_0);
+                lcd_clear(&I2C_MASTER);
                 uart_send_string(handler, "\r\nLCD off.\r\n");
                 break;
+#           ifdef FEATURE_CAN
             case '1':
                 lcd_mode = LCD_MODE_SENSOR;
-                lcd_clear(&I2C_MASTER_0);
-                lcd_write(&I2C_MASTER_0, 1, "Waiting CAN RX..");
+                lcd_clear(&I2C_MASTER);
+                lcd_write(&I2C_MASTER, 1, "Waiting CAN RX..");
                 uart_send_string(handler, "\r\nLCD: Sensor mode.\r\n");
                 break;
+#           endif
             case '2':
                 lcd_mode = LCD_MODE_POT;
-                lcd_clear(&I2C_MASTER_0);
+                lcd_clear(&I2C_MASTER);
                 uart_send_string(handler, "\r\nLCD: Potentiometer mode.\r\n");
                 break;
+#           ifdef FEATURE_GPS
+            case '3':
+                lcd_mode = LCD_MODE_GPS;
+                lcd_clear(&I2C_MASTER);
+                lcd_write(&I2C_MASTER, 1, "Waiting GPS fix.");
+                uart_send_string(handler, "\r\nLCD: GPS mode.\r\n");
+                break;
+#           endif
             default:
                 uart_printf(handler, "\r\n[Error] '%c' is not a valid option.\r\n", c);
                 break;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ASCII"?>
-<ResourceModel:App xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ResourceModel="http://www.infineon.com/Davex/Resource.ecore" name="PWM" URI="http://resources/4.1.12/app/PWM/0" description="Generates a PWM using one timer slice of CCU4 or CCU8" mode="NOTSHARABLE" version="4.1.12" minDaveVersion="4.3.2" instanceLabel="PWM_0" appLabel="" containingProxySignal="true">
+<ResourceModel:App xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ResourceModel="http://www.infineon.com/Davex/Resource.ecore" name="PWM" URI="http://resources/4.1.12/app/PWM/0" description="Generates a PWM using one timer slice of CCU4 or CCU8" mode="NOTSHARABLE" version="4.1.12" minDaveVersion="4.3.2" instanceLabel="PWM_POTENTIOMETER" appLabel="" containingProxySignal="true">
   <properties provideInit="true"/>
   <virtualSignals name="global_signal" URI="http://resources/4.1.12/app/PWM/0/vs_pwm_ccu8_cc8_slice_global" hwSignal="global_signal" hwResource="//@hwResources.0" required="false"/>
   <virtualSignals name="event_compare_match" URI="http://resources/4.1.12/app/PWM/0/vs_pwm_ccu8_cc8_slice_compare_match_interrupt" hwSignal="cmd1s_cmu1s" hwResource="//@hwResources.0" required="false"/>

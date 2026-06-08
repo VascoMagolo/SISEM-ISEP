@@ -66,7 +66,7 @@
  * @brief Contents entered via GUI
  */
 
-XMC_CCU4_SLICE_COMPARE_CONFIG_t TIMER_0_config =
+XMC_CCU4_SLICE_COMPARE_CONFIG_t TIMER_TICK_config =
 {
   .timer_mode          = XMC_CCU4_SLICE_TIMER_COUNT_MODE_EA,
   .monoshot            = XMC_CCU4_SLICE_TIMER_REPEAT_MODE_REPEAT,
@@ -82,7 +82,7 @@ XMC_CCU4_SLICE_COMPARE_CONFIG_t TIMER_0_config =
   .timer_concatenation = false
 };
 
-TIMER_t TIMER_0 = 
+TIMER_t TIMER_TICK = 
 {
   .ccu4_slice_ptr         = (XMC_CCU4_SLICE_t*) CCU40_CC41,
   .ccu4_slice_number      = 1U,
@@ -90,7 +90,7 @@ TIMER_t TIMER_0 =
   .timer_max_value_us     = 2684313600U,
   .timer_min_value_us     = 10U,
   .global_ccu4_handler    = (GLOBAL_CCU4_t*)&GLOBAL_CCU4_0, 
-  .ccu4_slice_config_ptr  = (XMC_CCU4_SLICE_COMPARE_CONFIG_t*)&TIMER_0_config,
+  .ccu4_slice_config_ptr  = (XMC_CCU4_SLICE_COMPARE_CONFIG_t*)&TIMER_TICK_config,
   .shadow_mask            = (uint32_t)((uint32_t)XMC_CCU4_SHADOW_TRANSFER_SLICE_1 | 
                                        (uint32_t)XMC_CCU4_SHADOW_TRANSFER_PRESCALER_SLICE_1),
   .ccu4_period_match_node = XMC_CCU4_SLICE_SR_ID_2,

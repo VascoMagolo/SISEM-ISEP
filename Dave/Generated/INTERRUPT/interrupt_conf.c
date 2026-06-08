@@ -64,7 +64,7 @@
  * DATA STRUCTURES
  **********************************************************************************************************************/
 
-const INTERRUPT_t INTERRUPT_0 =
+const INTERRUPT_t INTERRUPT_TICK =
 {
 #if(UC_SERIES == XMC14)
  .irqctrl = (XMC_SCU_IRQCTRL_t)0U,

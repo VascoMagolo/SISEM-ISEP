@@ -17,6 +17,9 @@ void cli_process_char(const UART_t* const handler, char c);
         LCD_MODE_OFF,
         LCD_MODE_SENSOR,
         LCD_MODE_POT,
+#       ifdef FEATURE_GPS
+            LCD_MODE_GPS,
+#       endif
     } lcd_mode_t;
 
     extern volatile lcd_mode_t lcd_mode;

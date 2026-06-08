@@ -64,7 +64,7 @@
  * EXTERN DECLARATIONS
 ***********************************************************************************************************************/
 	
-extern const INTERRUPT_t INTERRUPT_0; 
+extern const INTERRUPT_t INTERRUPT_TICK; 
 	
 extern const INTERRUPT_t INTERRUPT_CAN; 
 	
