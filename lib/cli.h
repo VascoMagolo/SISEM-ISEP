@@ -15,8 +15,11 @@ void cli_process_char(const UART_t* const handler, char c);
 # ifdef FEATURE_LCD
     typedef enum {
         LCD_MODE_OFF,
-        LCD_MODE_SENSOR,
+        LCD_MODE_CAN_RX_AHT10,
         LCD_MODE_POT,
+#       ifdef FEATURE_AHT10
+            LCD_MODE_LOCAL_AHT10,
+#       endif
 #       ifdef FEATURE_GPS
             LCD_MODE_GPS,
 #       endif

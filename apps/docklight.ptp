@@ -129,7 +129,7 @@ SEND
 
 SEND
 15
-    6b) AHT10 info (temp/hum)
+    6b) filtered CAN ID AHT10 info
 31
 0
 5
@@ -145,6 +145,13 @@ SEND
 17
     6d) GPS info
 33
+0
+5
+
+SEND
+18
+    6e) own AHT10 info
+34
 0
 5
 

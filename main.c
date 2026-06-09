@@ -111,7 +111,7 @@ int main(void) {
                 flag_data_rx = 0;
                 cli_process_can_rx(&UART_CLI, can_id_rx, data_rx);
 #               ifdef FEATURE_LCD
-                    if (lcd_mode == LCD_MODE_SENSOR) {
+                    if (lcd_mode == LCD_MODE_CAN_RX_AHT10) {
                         float rx_temp, rx_hum;
                         can_decode_sensor(data_rx, &rx_temp, &rx_hum);
                         char buf[17];
@@ -132,6 +132,16 @@ int main(void) {
                         aht10_parse_temperature((float*)&temperature, raw);
                         aht10_parse_humidity((float*)&humidity, raw);
                         can_send_sensor(&CAN_NODE, CAN_ID_GROUP, temperature, humidity);
+#                       ifdef FEATURE_LCD
+                            if (lcd_mode == LCD_MODE_LOCAL_AHT10) {
+                                char buf[17];
+                                lcd_clear(&I2C_MASTER);
+                                snprintf(buf, sizeof(buf), "T: %.1f C", temperature);
+                                lcd_write(&I2C_MASTER, 1, buf);
+                                snprintf(buf, sizeof(buf), "H: %.1f %%", humidity);
+                                lcd_write(&I2C_MASTER, 2, buf);
+                            }
+#                       endif
                     }
 #               endif
             }

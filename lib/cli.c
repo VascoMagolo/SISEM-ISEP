@@ -22,9 +22,12 @@
         uart_send_string(handler, "\r\nLCD mode:\r\n"
             " 0 - Off\r\n"
 #           ifdef FEATURE_CAN
-                " 1 - Sensor (Temp + Humidity)\r\n"
+                " 1 - Sensor (CAN RX Temp + Humidity)\r\n"
 #           endif
             " 2 - Potentiometer\r\n"
+#           ifdef FEATURE_AHT10
+                " 4 - AHT10 (local sensor)\r\n"
+#           endif
 #           ifdef FEATURE_GPS
                 " 3 - GPS\r\n"
 #           endif
@@ -215,7 +218,7 @@ void cli_process_char(const UART_t *const handler, char c) {
                 break;
 #           ifdef FEATURE_CAN
             case '1':
-                lcd_mode = LCD_MODE_SENSOR;
+                lcd_mode = LCD_MODE_CAN_RX_AHT10;
                 lcd_clear(&I2C_MASTER);
                 lcd_write(&I2C_MASTER, 1, "Waiting CAN RX..");
                 uart_send_string(handler, "\r\nLCD: Sensor mode.\r\n");
@@ -226,6 +229,14 @@ void cli_process_char(const UART_t *const handler, char c) {
                 lcd_clear(&I2C_MASTER);
                 uart_send_string(handler, "\r\nLCD: Potentiometer mode.\r\n");
                 break;
+#           ifdef FEATURE_AHT10
+            case '4':
+                lcd_mode = LCD_MODE_LOCAL_AHT10;
+                lcd_clear(&I2C_MASTER);
+                lcd_write(&I2C_MASTER, 1, "AHT10 local");
+                uart_send_string(handler, "\r\nLCD: AHT10 local sensor mode.\r\n");
+                break;
+#           endif
 #           ifdef FEATURE_GPS
             case '3':
                 lcd_mode = LCD_MODE_GPS;
