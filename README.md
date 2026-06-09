@@ -75,7 +75,7 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 | Bytes 0-3 | Latitude - `physical = raw * 0.000001`        |
 | Bytes 4-7 | Longitude - `physical = raw * 0.000001`       |
 
-DBC definition: [`docs/DBC_TarefaB.dbc`](docs/DBC_TarefaB.dbc)  
+DBC definition: [`apps/DBC_TarefaB.dbc`](apps/DBC_TarefaB.dbc)  
 Cangaroo workspace: [`apps/CAN.cangaroo`](apps/CAN.cangaroo)
 
 ## Pins used:
@@ -130,4 +130,4 @@ Power each device independently (5 V / GND).
 ### CAN
 
 - [Cangaroo](apps/CAN.cangaroo)
-  - uses [DBC file](docs/DBC_TarefaB.dbc)
+  - uses [DBC file](apps/DBC_TarefaB.dbc)
