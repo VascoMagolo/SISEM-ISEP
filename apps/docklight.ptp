@@ -155,3 +155,38 @@ SEND
 0
 5
 
+SEND
+19
+    6f) EEPROM data
+35
+0
+5
+
+SEND
+20
+7 - Write LCD row 1
+37
+0
+5
+
+SEND
+21
+8 - Write LCD row 2
+38
+0
+5
+
+SEND
+22
+Hello, World
+48 65 6C 6C 6F 2C 20 77 6F 72 6C 64 21 0D
+0
+5
+
+SEND
+23
+Overflow LCD
+4F 76 65 72 66 6C 6F 77 69 6E 67 20 69 73 20 6E 6F 74 20 66 75 6E 21 0D
+0
+5
+
