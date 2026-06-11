@@ -21,3 +21,5 @@ Thumbs.db
 *.log
 
 **/*~kicad*
+apps/kicad/.history/
+apps/kicad/*.kicad_prl

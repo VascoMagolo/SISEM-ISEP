@@ -12,18 +12,20 @@ Event-driven bare-metal firmware for the XMC4200. A 10 ms system tick drives all
 - **Potentiometer** value read via ADC, applied to PWM duty cycle
 - **AHT10** temperature and humidity sensor read over I2C
 - **CAN** periodic broadcast of sensor data every 500 ms; receive and parse frames from other groups
-- **LCD** 16x2 display over I2C, mode selectable via CLI (off / CAN RX AHT10 / potentiometer / local AHT10 / GPS)
+- **LCD** 16x2 display over I2C, mode selectable via CLI (off / CAN RX AHT10 / potentiometer / local AHT10 / GPS / EEPROM text)
 - **GPS** u-blox NEO-6M reads NMEA `$GPGGA` frames
+- **EEPROM** AT24C32E persists blink period, CAN filter, LCD mode, and LCD text rows across power cycles
 
 ## Feature flags
 
 Hardware modules can be individually enabled or disabled in [`config.h`](config.h):
 
 ```c
-#define FEATURE_AHT10  // I2C temperature and humidity sensor
-#define FEATURE_CAN    // CAN bus transmit and receive
-#define FEATURE_LCD    // 16x2 LCD display over I2C
-#define FEATURE_GPS    // GPS module via UART
+#define FEATURE_AHT10   // I2C temperature and humidity sensor
+#define FEATURE_CAN     // CAN bus transmit and receive
+#define FEATURE_LCD     // 16x2 LCD display over I2C
+#define FEATURE_GPS     // GPS module via UART
+#define FEATURE_EEPROM  // AT24C32E settings persistence over I2C
 ```
 
 Commenting out a define removes all related code at compile time - includes, CLI menu options, periodic tasks, and ISR handlers - without touching any other file.
@@ -53,6 +55,9 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 | `6c` → `2`     | Preset: Potentiometer info                           |
 | `6d` → `3`     | Preset: GPS coordinates                              |
 | `6e` → `4`     | Preset: Local AHT10 info                             |
+| `6f` → `5`     | Preset: EEPROM stored text                           |
+| `7`            | Write LCD row 1 text (max 16 chars, saved to EEPROM) |
+| `8`            | Write LCD row 2 text (max 16 chars, saved to EEPROM) |
 
 ## CAN Bus
 
@@ -114,6 +119,10 @@ Power each device independently (5 V / GND).
 
 - DB-9
 
+## Documentation
+
+- [Technical Report](docs/report/technical_report.pdf)
+
 ## Software used:
 
 ### Development
@@ -132,3 +141,12 @@ Power each device independently (5 V / GND).
 
 - [Cangaroo](apps/CAN.cangaroo)
   - uses [DBC file](apps/DBC_TarefaB.dbc)
+
+### KiCad
+
+- Project: [`apps/kicad/`](apps/kicad/)
+  - relevant files: [kicad_sch](apps/kicad/kicad.kicad_sch), [kicad_sym](apps/kicad/kicad.kicad_sym)
+
+## Schematic
+
+![Schematic](apps/kicad/output/kicad_fit_content.svg)
