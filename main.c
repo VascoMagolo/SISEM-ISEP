@@ -2,35 +2,29 @@
 
 #include "DAVE.h"
 #include "config.h"
+#include "app_state.h"
 #include "lib/cli.h"
 #include "lib/uart.h"
 
-#define TICK_MS 10U
-#define TIMER_MS(ms) ((uint32_t)(ms) * 100000U)
+#define TIMER_MS(ms) ((uint32_t)(ms) * 100000) // 100000 timer ticks per ms
 
-# ifdef FEATURE_LCD
-#    include "lib/lcd.h"
-# endif
+#if defined(FEATURE_LCD)
+#   include "lib/lcd.h"
+#endif
 
-# ifdef FEATURE_AHT10
-#    include "lib/aht10.h"
-     volatile float temperature = 0.0f;
-     volatile float humidity = 0.0f;
-# endif
+#if defined(FEATURE_AHT10)
+#   include "lib/aht10.h"
+#endif
 
-# ifdef FEATURE_CAN
-#    include "lib/can.h"
-#    define CAN_SENSOR_TICKS (500U / TICK_MS)  // 500ms : 10ms = 50 ticks
-     static volatile bool can_sensor_tick = false;
-# endif
+#if defined(FEATURE_CAN)
+#   include "lib/can.h"
+#   define CAN_SENSOR_TICKS (500 / TICK_MS)   // fire every 500ms
+    static volatile bool can_sensor_tick = false;
+#endif
 
-# ifdef FEATURE_GPS
-#    include "lib/gps.h"
-# endif
-
-volatile uint16_t potentiometer_value = 0;
-volatile bool     led_blinking        = false;
-volatile uint32_t led_tick_interval   = 100;  // 100 ticks * 10ms = 1000ms default
+#if defined(FEATURE_GPS)
+#   include "lib/gps.h"
+#endif
 
 static volatile uint32_t tick_count = 0;
 static volatile bool     adc_tick   = false;
@@ -48,7 +42,7 @@ void system_tick(void) {
     }
     btn_prev = btn_now;
 
-#   ifdef FEATURE_CAN
+#   if defined(FEATURE_CAN)
         if (tick_count % CAN_SENSOR_TICKS == 0) {
             can_sensor_tick = true;
         }
@@ -74,8 +68,12 @@ int main(void) {
 
     ADC_MEASUREMENT_StartConversion(&ADC_POTENTIOMETER);
 
-#   ifdef FEATURE_LCD
+#   if defined(FEATURE_LCD)
         lcd_init(&I2C_MASTER);
+#   endif
+
+#   if defined(FEATURE_EEPROM)
+        cli_load_settings();
 #   endif
 
     cli_print_header(&UART_CLI);
@@ -85,8 +83,8 @@ int main(void) {
         if (adc_tick) {
             adc_tick = false;
             potentiometer_value = ADC_MEASUREMENT_GetResult(&ADC_MEASUREMENT_CHANNEL_0_handle);
-            PWM_SetDutyCycle(&PWM_POTENTIOMETER, (uint32_t)potentiometer_value * 10000 / 255);
-#           ifdef FEATURE_LCD
+            PWM_SetDutyCycle(&PWM_POTENTIOMETER, (uint32_t)potentiometer_value * 10000 / 255); // scale 0-255 to 0-10000
+#           if defined(FEATURE_LCD)
                 if (lcd_mode == LCD_MODE_POT) {
                     static uint8_t lcd_pot_ticks = 0;
                     if (++lcd_pot_ticks >= 10) {
@@ -103,11 +101,11 @@ int main(void) {
             led_blinking = !led_blinking;
         }
 
-#       ifdef FEATURE_CAN
+#       if defined(FEATURE_CAN)
             if (flag_data_rx) {
                 flag_data_rx = 0;
                 cli_process_can_rx(&UART_CLI, can_id_rx, data_rx);
-#               ifdef FEATURE_LCD
+#               if defined(FEATURE_LCD)
                     if (lcd_mode == LCD_MODE_CAN_RX_AHT10) {
                         float rx_temp, rx_hum;
                         can_decode_sensor(data_rx, &rx_temp, &rx_hum);
@@ -120,13 +118,13 @@ int main(void) {
 
             if (can_sensor_tick) {
                 can_sensor_tick = false;
-#               ifdef FEATURE_AHT10
+#               if defined(FEATURE_AHT10)
                     uint8_t raw[8] = { 0 };
                     if (aht10_read(raw)) {
-                        aht10_parse_temperature((float*)&temperature, raw);
-                        aht10_parse_humidity((float*)&humidity, raw);
+                        aht10_parse_temperature(&temperature, raw);
+                        aht10_parse_humidity(&humidity, raw);
                         can_send_sensor(&CAN_NODE, CAN_ID_GROUP, temperature, humidity);
-#                       ifdef FEATURE_LCD
+#                       if defined(FEATURE_LCD)
                             if (lcd_mode == LCD_MODE_LOCAL_AHT10) {
                                 lcd_clear(&I2C_MASTER);
                                 lcd_printf(&I2C_MASTER, 1, "T: %.1f C", temperature);
@@ -138,7 +136,7 @@ int main(void) {
             }
 #       endif
 
-#       ifdef FEATURE_GPS
+#       if defined(FEATURE_GPS)
             while (!UART_IsRXFIFOEmpty(&UART_GPS)) {
                 gps_feed((char)UART_GetReceivedWord(&UART_GPS));
             }
@@ -150,7 +148,7 @@ int main(void) {
                         "\r\n[GPS] %02u:%02u:%02uZ  Lat: %.6f  Lon: %.6f  Satellites: %u\r\n",
                         gps_data.hour, gps_data.minute, gps_data.second,
                         gps_data.latitude, gps_data.longitude, gps_data.satellites);
-#                   ifdef FEATURE_CAN
+#                   if defined(FEATURE_CAN)
                         can_send_gps(&CAN_NODE, CAN_ID_GROUP, gps_data.latitude, gps_data.longitude);
 #                   endif
                 } else {
@@ -159,7 +157,7 @@ int main(void) {
                         gps_data.hour, gps_data.minute, gps_data.second,
                         gps_data.satellites);
                 }
-#               ifdef FEATURE_LCD
+#               if defined(FEATURE_LCD)
                     if (lcd_mode == LCD_MODE_GPS) {
                         static bool    last_fix  = false;
                         static float   last_lat  = 0.0f;

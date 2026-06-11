@@ -8,24 +8,36 @@ void cli_print_header(const UART_t* const handler);
 void cli_print_menu(const UART_t* const handler);
 void cli_process_char(const UART_t* const handler, char c);
 
-# ifdef FEATURE_CAN
+# if defined(FEATURE_CAN)
      void cli_process_can_rx(const UART_t* const handler, uint16_t can_id, const uint8_t data[8]);
 # endif
 
-# ifdef FEATURE_LCD
+# if defined(FEATURE_LCD)
     typedef enum {
         LCD_MODE_OFF,
         LCD_MODE_CAN_RX_AHT10,
         LCD_MODE_POT,
-#       ifdef FEATURE_AHT10
+#       if defined(FEATURE_AHT10)
             LCD_MODE_LOCAL_AHT10,
 #       endif
-#       ifdef FEATURE_GPS
+#       if defined(FEATURE_GPS)
             LCD_MODE_GPS,
+#       endif
+#       if defined(FEATURE_EEPROM)
+            LCD_MODE_EEPROM,
 #       endif
     } lcd_mode_t;
 
     extern volatile lcd_mode_t lcd_mode;
+# endif
+
+# if defined(FEATURE_EEPROM)
+    void cli_save_settings(void);
+    void cli_load_settings(void);
+#   if defined(FEATURE_LCD)
+        extern char lcd_row1[17];
+        extern char lcd_row2[17];
+#   endif
 # endif
 
 #endif /* LIB_CLI_H_ */
