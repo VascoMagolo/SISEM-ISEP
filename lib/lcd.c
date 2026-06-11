@@ -1,4 +1,6 @@
 #include "lcd.h"
+#include <stdio.h>
+#include <stdarg.h>
 
 #define LCD_I2C_ADDRESS 0x4E
 
@@ -54,4 +56,13 @@ void lcd_write(I2C_MASTER_t *controller, int row, char str[16]) {
     for (int char_idx = 0; char_idx < 16 && str[char_idx]; char_idx++) {
     	lcd_send_char(controller, str[char_idx]);
     }
+}
+
+void lcd_printf(I2C_MASTER_t *controller, int row, const char *fmt, ...) {
+    char buf[17];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    lcd_write(controller, row, buf);
 }

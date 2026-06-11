@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "DAVE.h"
 #include "config.h"
@@ -92,10 +91,8 @@ int main(void) {
                     static uint8_t lcd_pot_ticks = 0;
                     if (++lcd_pot_ticks >= 10) {
                         lcd_pot_ticks = 0;
-                        char buf[17];
                         lcd_clear(&I2C_MASTER);
-                        snprintf(buf, sizeof(buf), "Pot: %u", potentiometer_value);
-                        lcd_write(&I2C_MASTER, 1, buf);
+                        lcd_printf(&I2C_MASTER, 1, "Pot: %u", potentiometer_value);
                     }
                 }
 #           endif
@@ -114,12 +111,9 @@ int main(void) {
                     if (lcd_mode == LCD_MODE_CAN_RX_AHT10) {
                         float rx_temp, rx_hum;
                         can_decode_sensor(data_rx, &rx_temp, &rx_hum);
-                        char buf[17];
                         lcd_clear(&I2C_MASTER);
-                        snprintf(buf, sizeof(buf), "CAN ID: 0x%03X", can_id_rx);
-                        lcd_write(&I2C_MASTER, 1, buf);
-                        snprintf(buf, sizeof(buf), "T:%.1fC H:%.1f%%", rx_temp, rx_hum);
-                        lcd_write(&I2C_MASTER, 2, buf);
+                        lcd_printf(&I2C_MASTER, 1, "CAN ID: 0x%03X", can_id_rx);
+                        lcd_printf(&I2C_MASTER, 2, "T:%.1fC H:%.1f%%", rx_temp, rx_hum);
                     }
 #               endif
             }
@@ -134,12 +128,9 @@ int main(void) {
                         can_send_sensor(&CAN_NODE, CAN_ID_GROUP, temperature, humidity);
 #                       ifdef FEATURE_LCD
                             if (lcd_mode == LCD_MODE_LOCAL_AHT10) {
-                                char buf[17];
                                 lcd_clear(&I2C_MASTER);
-                                snprintf(buf, sizeof(buf), "T: %.1f C", temperature);
-                                lcd_write(&I2C_MASTER, 1, buf);
-                                snprintf(buf, sizeof(buf), "H: %.1f %%", humidity);
-                                lcd_write(&I2C_MASTER, 2, buf);
+                                lcd_printf(&I2C_MASTER, 1, "T: %.1f C", temperature);
+                                lcd_printf(&I2C_MASTER, 2, "H: %.1f %%", humidity);
                             }
 #                       endif
                     }
@@ -174,17 +165,14 @@ int main(void) {
                         static float   last_lat  = 0.0f;
                         static float   last_lon  = 0.0f;
                         static uint8_t last_sats = 0xFF;
-                        char buf[17];
                         if (gps_data.fix_valid) {
                             if (!last_fix || gps_data.latitude != last_lat || gps_data.longitude != last_lon) {
                                 last_fix = true;
                                 last_lat = gps_data.latitude;
                                 last_lon = gps_data.longitude;
-                                snprintf(buf, sizeof(buf), "Lat: %.6f", gps_data.latitude);
                                 lcd_clear(&I2C_MASTER);
-                                lcd_write(&I2C_MASTER, 1, buf);
-                                snprintf(buf, sizeof(buf), "Lon: %.6f", gps_data.longitude);
-                                lcd_write(&I2C_MASTER, 2, buf);
+                                lcd_printf(&I2C_MASTER, 1, "Lat: %.6f", gps_data.latitude);
+                                lcd_printf(&I2C_MASTER, 2, "Lon: %.6f", gps_data.longitude);
                             }
                         } else {
                             if (last_fix || gps_data.satellites != last_sats) {
@@ -192,8 +180,7 @@ int main(void) {
                                 last_sats = gps_data.satellites;
                                 lcd_clear(&I2C_MASTER);
                                 lcd_write(&I2C_MASTER, 1, "No GPS fix");
-                                snprintf(buf, sizeof(buf), "Satellites: %u", gps_data.satellites);
-                                lcd_write(&I2C_MASTER, 2, buf);
+                                lcd_printf(&I2C_MASTER, 2, "Satellites: %u", gps_data.satellites);
                             }
                         }
                     }
