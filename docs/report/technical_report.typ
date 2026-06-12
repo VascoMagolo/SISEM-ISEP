@@ -74,7 +74,7 @@ feature module to the system:
     [*Feature*], [*Description*], [*Task*],
     [LED + Button], [Blink rate configurable via button press or CLI], [A],
     [Potentiometer], [8-bit ADC reading drives PWM duty cycle], [A],
-    [AHT10], [I2C temperature and humidity sensor], [A, B],
+    [AHT10], [I2C temperature and humidity sensor], [B],
     [CAN Bus], [Periodic sensor frames; receive and decode frames from others], [B],
     [LCD 16x2], [I2C display with six selectable modes], [B],
     [EEPROM], [AT24C32E persists settings and LCD text across power cycles], [B],
@@ -107,7 +107,7 @@ point and event loop live in `main.c`; shared mutable state lives in `app_state`
 all peripheral drivers are under `lib/`.
 
 ```
-tarefa_a/
+(root)/
 ├── config.h          - feature flags (#define FEATURE_*)
 ├── app_state.{c,h}   - shared volatile state (potentiometer, led_blinking, timer_interval)
 ├── main.c            - DAVE_Init, system_tick ISR, main event loop
