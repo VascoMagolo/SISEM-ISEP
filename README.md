@@ -117,7 +117,7 @@ Power each device independently (5 V / GND).
 
 #### CANBUS USB transceiver
 
-- DB-9
+- DE-9
 
 ## Documentation
 
@@ -145,7 +145,8 @@ Power each device independently (5 V / GND).
 ### KiCad
 
 - Project: [`apps/kicad/`](apps/kicad/)
-  - relevant files: [kicad_sch](apps/kicad/kicad.kicad_sch), [kicad_sym](apps/kicad/kicad.kicad_sym)
+  - relevant links: [Rules and Guidelines for Drawing Good Schematics](https://electronics.stackexchange.com/questions/28251/rules-and-guidelines-for-drawing-good-schematics)
+  - relevant files/folders: [`.kicad_sch`](apps/kicad/kicad.kicad_sch), [`.kicad_sym`](apps/kicad/kicad.kicad_sym), [`apps/kicad/output/README.md`](apps/kicad/output/README.md)
 
 ## Schematic
 

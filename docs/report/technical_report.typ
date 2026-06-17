@@ -69,6 +69,7 @@ feature module to the system:
 #figure(
   table(
     columns: (auto, 1fr, auto),
+    align: (col, row) => if row == 0 { center } else { left },
     stroke: 0.5pt,
     fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
     [*Feature*], [*Description*], [*Task*],
@@ -76,9 +77,9 @@ feature module to the system:
     [Potentiometer], [8-bit ADC reading drives PWM duty cycle], [A],
     [AHT10], [I2C temperature and humidity sensor], [B],
     [CAN Bus], [Periodic sensor frames; receive and decode frames from others], [B],
-    [LCD 16x2], [I2C display with six selectable modes], [B],
-    [EEPROM], [AT24C32E persists settings and LCD text across power cycles], [B],
     [GPS], [NMEA parsing via UART - lat, lon, UTC, fix status, satellites], [Final],
+    [LCD 16x2], [I2C display with six selectable modes], [Bonus],
+    [EEPROM], [AT24C32E persists settings and LCD text across power cycles], [Bonus],
   ),
   caption: [Implemented features per development task],
 )
@@ -152,24 +153,54 @@ incoming bytes between loop iterations, so no additional flag is needed.
     edge("->"),
     node((0, 3), [*Main Loop*], fill: luma(235)),
     edge("->"),
-    node((0, 4), [`adc_tick` $arrow$ ADC read , PWM update \ LCD refresh (pot mode, every 10 ticks)]),
+    node((0, 4), [`adc_tick`?], shape: fletcher.shapes.diamond, fill: luma(235)),
+    edge("->", label: [no]),
+    node((0, 5.5), [`btn_event`?], shape: fletcher.shapes.diamond, fill: luma(235)),
+    edge("->", label: [no]),
+    node((0, 7), [`flag_data_rx`?], shape: fletcher.shapes.diamond, fill: luma(235)),
+    edge("->", label: [no]),
+    node((0, 8.5), [`can_sensor_tick`?], shape: fletcher.shapes.diamond, fill: luma(235)),
+    edge("->", label: [no]),
+    node((0, 10), [Poll `UART_GPS` FIFO $arrow$ `gps_feed(c)` per byte]),
     edge("->"),
-    node((0, 5), [`btn_event` $arrow$ toggle `led_blinking`]),
-    edge("->"),
-    node(
-      (0, 6),
-      [`flag_data_rx` $arrow$ decode CAN RX , print , LCD update (CAN mode) \ `can_sensor_tick` $arrow$ AHT10 read , `can_send_sensor()` , LCD update (AHT10 mode)],
-    ),
-    edge("->"),
-    node((0, 7), [Poll `UART_GPS` FIFO $arrow$ `gps_feed(c)` per byte]),
-    edge("->"),
-    node((0, 8), [`gps_updated`?], shape: fletcher.shapes.diamond, fill: luma(235)),
+    node((0, 11), [`gps_updated`?], shape: fletcher.shapes.diamond, fill: luma(235)),
     edge("->", label: [yes]),
-    node((0, 9), [Print to Docklight , `can_send_gps()` , LCD update (GPS mode)]),
+    node((0, 12), [`fix_valid`?], shape: fletcher.shapes.diamond, fill: luma(235)),
+    edge("->", label: [no]),
+    node((0, 13), [Print no-fix to Docklight \ _(if fix lost or satellite count changed)_]),
     edge("->"),
-    node((0, 10), [Poll `UART_CLI` FIFO $arrow$ `cli_process_char(c)` per byte]),
-    edge((0, 10), (-1.5, 10), (-1.5, 3), (0, 3), "->"),
-    edge((0, 8), (1.5, 8), (1.5, 10), (0, 10), "->", label: [no]),
+    node((0, 14), [`can_send_gps_meta()` , update `prev_fix` / `prev_sats` \ LCD update (GPS mode)]),
+    edge("->"),
+    node((0, 15), [Poll `UART_CLI` FIFO $arrow$ `cli_process_char(c)` per byte]),
+    edge((0, 15), (-1.5, 15), (-1.5, 3), (0, 3), "->"),
+
+    // adc_tick yes
+    edge((0, 4), (2, 4), "->", label: [yes], label-sep: 0.5pt),
+    node((2, 4), [ADC read , PWM update \ LCD refresh (pot mode , every 10 ticks)]),
+    edge((2, 4), (2, 4.75), (0.2, 4.75), (0.2, 5.5), "->"),
+
+    // btn_event yes
+    edge((0, 5.5), (2, 5.5), "->", label: [yes], label-sep: 0.5pt),
+    node((2, 5.5), [Toggle `led_blinking`]),
+    edge((2, 5.5), (2, 6.25), (0.2, 6.25), (0.2, 7), "->"),
+
+    // flag_data_rx yes
+    edge((0, 7), (2, 7), "->", label: [yes], label-sep: 0.5pt),
+    node((2, 7), [Decode CAN RX , print to Docklight \ LCD update (CAN RX mode)]),
+    edge((2, 7), (2, 7.75), (0.2, 7.75), (0.2, 8.5), "->"),
+
+    // can_sensor_tick yes
+    edge((0, 8.5), (2, 8.5), "->", label: [yes], label-sep: 0.5pt),
+    node((2, 8.5), [AHT10 read , `can_send_sensor()` \ LCD update (AHT10 mode)]),
+    edge((2, 8.5), (2, 9.25), (0.2, 9.25), (0.2, 10), "->"),
+
+    // gps_updated no - bypass to Poll UART_CLI
+    edge((0, 11), (3, 11), (3, 15), (0, 15), "->", label: [no]),
+
+    // fix_valid yes
+    edge((0, 12), (2, 12), "->", label: [yes], label-sep: 0.5pt),
+    node((2, 12), [Print fix to Docklight \ `can_send_gps()`]),
+    edge((2, 12), (2, 14), (0, 14), "->"),
   ),
   caption: [Main loop event dispatch - all features enabled],
 )
@@ -223,25 +254,31 @@ The `volatile float *out` parameter matches the `volatile float` globals `temper
 
 == CAN Bus
 
-The CAN bus operates at 500 kbps. This node transmits two 8-byte frame types on our group's assigned CAN ID `0x4C0`:
+The CAN bus operates at 500 kbps. This node transmits three 8-byte frame types across dedicated CAN IDs derived from the group base address `CAN_ID_BASE = 0x4C0`:
 
 #figure(
   table(
-    columns: (auto, auto, auto),
+    columns: (auto, auto, auto, auto),
+    align: (col, row) => if row == 0 { center } else if col < 2 { center } else { left },
     stroke: 0.5pt,
     fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
-    [*Bytes*], [*Signal*], [*Encoding*],
-    [0-3], [Temperature], [`uint32` = (degrees + 55) $times$ 10 _(factor 0.1, offset -55)_],
-    [4-7], [Humidity], [`uint32` = humidity $times$ 10 _(factor 0.1, offset 0)_],
-    [0-3], [Latitude], [`int32` = degrees $times 10^6$ _(factor $10^(-6)$, signed)_],
-    [4-7], [Longitude], [`int32` = degrees $times 10^6$ _(factor $10^(-6)$, signed)_],
+    [*CAN ID*], [*Bytes*], [*Signal*], [*Encoding*],
+    [`0x4C0`], [0-3], [Temperature], [`uint32` = (degrees + 55) $times$ 10 _(factor 0.1, offset -55)_],
+    [`0x4C0`], [4-7], [Humidity], [`uint32` = humidity $times$ 10 _(factor 0.1, offset 0)_],
+    [`0x4C1`], [0-3], [Latitude], [`int32` = degrees $times 10^6$ _(factor $10^(-6)$, signed)_],
+    [`0x4C1`], [4-7], [Longitude], [`int32` = degrees $times 10^6$ _(factor $10^(-6)$, signed)_],
+    [`0x4C2`], [0], [UTC_Hour], [`uint8`, range 0-23],
+    [`0x4C2`], [1], [UTC_Minute], [`uint8`, range 0-59],
+    [`0x4C2`], [2], [UTC_Second], [`uint8`, range 0-59],
+    [`0x4C2`], [3], [Satellites], [`uint8`, count],
+    [`0x4C2`], [4], [Fix_Valid], [`uint1` (1 = fix, 0 = no fix)],
   ),
   caption: [CAN frames transmitted by Group 3],
 )
 
-The sensor frame is sent every 500 ms. The GPS frame is sent on each valid fix update (~1 Hz, only when `gps_data.fix_valid` is true). Both frames share the same CAN ID and are distinguished by context - the sensor frame is periodic, the GPS frame is event-driven.
+`Grp3_Sensor` (0x4C0) is sent every 500 ms. `Grp3_GPS_Pos` (0x4C1) is sent on each valid fix update (~1 Hz, only when `gps_data.fix_valid` is true). `Grp3_GPS_Meta` (0x4C2) is sent on every GPS sentence update regardless of fix status as satellite count and fix validity are meaningful even without a position lock. When the fix is lost, the UART no-fix message is printed on the transition from fix to no-fix and again each time the satellite count changes, allowing the user to observe some progress. Sentences where neither condition is met are silently consumed.
 
-The temperature encoding uses a +55 offset so that the full AHT10 sensor range (-40 °C to +85 °C) fits in an unsigned 32-bit integer. GPS coordinates use a signed `int32_t` $times 10^6$ representation, giving approximately 0.11 m resolution.
+The temperature encoding uses a +55 offset so that the full AHT10 sensor range (-40 °C to +85 °C) fits in an unsigned 32-bit integer.
 
 Receive is interrupt-driven: `can_interrupt()` fires when message object 0 receives a frame, copies the payload into `data_rx`, and sets `flag_data_rx`. The main loop dispatches to `cli_process_can_rx`, which applies the CLI-configured software filter before printing the decoded temperature and humidity to Docklight.
 
@@ -252,6 +289,7 @@ The 16x2 LCD uses the HD44780 controller behind a PCF8574 I2C I/O expander at ad
 #figure(
   table(
     columns: (auto, auto, 1fr),
+    align: (col, row) => if row == 0 { center } else if col == 1 { center } else { left },
     stroke: 0.5pt,
     fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
     [*Mode*], [*Cmd*], [*Content*],
@@ -276,6 +314,7 @@ The GY-GPS6MV2 board (u-blox NEO-6M chip) connects to the XMC4200 MikroBUS socke
 #figure(
   table(
     columns: (auto, auto),
+    align: (col, row) => if row == 0 { center } else { left },
     stroke: 0.5pt,
     fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
     [*Parameter*], [*Value*],
@@ -299,6 +338,7 @@ $GPGGA,HHMMSS.ss,LLLL.LL,a,YYYYY.YY,b,q,nn,...
 #figure(
   table(
     columns: (auto, auto, auto),
+    align: (col, row) => if row == 0 { center } else if col == 1 { center } else { left },
     stroke: 0.5pt,
     fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
     [*Field*], [*Index*], [*Description*],
@@ -324,14 +364,15 @@ The AT24C32E is a 4 096-byte I2C EEPROM at address 0xA0. A 9-byte header at addr
 #figure(
   table(
     columns: (auto, auto, auto, auto),
+    align: (col, row) => if row == 0 { center } else if col < 2 { center } else { left },
     stroke: 0.5pt,
     fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
-    [*Offset*], [*Size*], [*Field*], [*Description*],
-    [`0x00`], [1 B], [`magic`], [Always `0xAB` - marks the header as valid],
-    [`0x01`], [4 B], [`timer_interval`], [LED blink period in ms (100 - 10 000)],
-    [`0x05`], [2 B], [`can_filter_id`], [Active CAN RX filter ID (11-bit)],
-    [`0x07`], [1 B], [`can_filter_active`], [1 if CAN filter is enabled, 0 otherwise],
-    [`0x08`], [1 B], [`lcd_mode`], [Last selected LCD mode (0 - 5)],
+    [*Offset*], [*Size in bytes*], [*Field*], [*Description*],
+    [`0x00`], [1], [`magic`], [Always `0xAB` - marks the header as valid],
+    [`0x01`], [4], [`timer_interval`], [LED blink period in ms (100 - 10 000)],
+    [`0x05`], [2], [`can_filter_id`], [Active CAN RX filter ID (11-bit)],
+    [`0x07`], [1], [`can_filter_active`], [1 if CAN filter is enabled, 0 otherwise],
+    [`0x08`], [1], [`lcd_mode`], [Last selected LCD mode (0 - 5)],
   ),
   caption: [EEPROM header layout (9 bytes at 0x0000)],
 )
@@ -487,10 +528,9 @@ void can_send_sensor(const CAN_NODE_t *can_node, uint16_t can_id,
     can_send(can_node, can_id, payload, 8);
 }
 
-void can_send_gps(const CAN_NODE_t *can_node, uint16_t can_id,
-                  float lat, float lon) {
-    int32_t lat_enc = (int32_t)(lat * 1e6f);
-    int32_t lon_enc = (int32_t)(lon * 1e6f);
+void can_send_gps(const CAN_NODE_t *can_node, uint16_t can_id, gps_data_t data) {
+    int32_t lat_enc = (int32_t)(data.latitude * 1e6f);
+    int32_t lon_enc = (int32_t)(data.longitude * 1e6f);
     uint8_t payload[8];
     payload[0] = (uint8_t)(lat_enc);
     payload[1] = (uint8_t)(lat_enc >> 8);
@@ -501,6 +541,15 @@ void can_send_gps(const CAN_NODE_t *can_node, uint16_t can_id,
     payload[6] = (uint8_t)(lon_enc >> 16);
     payload[7] = (uint8_t)(lon_enc >> 24);
     can_send(can_node, can_id, payload, 8);
+}
+
+void can_send_gps_meta(const CAN_NODE_t *can_node, uint16_t can_id, gps_data_t data) {
+    uint8_t payload[5] = {
+        data.hour, data.minute, data.second, data.satellites,
+        data.fix_valid ? 1 : 0
+    };
+
+    can_send(can_node, can_id, payload, 5);
 }
 ```
 
@@ -537,32 +586,48 @@ Grupo 3, Diogo Nogueira/Vasco Magolo, 1241692/1231562
 
 #figure(
   table(
-    columns: (3.6cm, 1fr),
+    columns: (auto, auto, 1fr),
+    align: (col, row) => if row == 0 { center } else if col == 2 { left } else { center },
     stroke: 0.5pt,
-    fill: (_, row) => if row == 0 { luma(220) } else if calc.odd(row) { luma(248) } else { none },
-    [*Command*], [*Action*],
-    [`↵`], [Carriage return - re-displays the menu],
-    [`0`], [Exit (halt)],
-    [`1`], [Read potentiometer ADC value (0 - 255)],
-    [`2` + value + `↵`], [Set LED blink full-period in ms (100 - 10 000)],
-    [`2a` $arrow$ `2000↵`], [Preset: 2 s period],
-    [`2b` $arrow$ `1000↵`], [Preset: 1 s period],
-    [`2c` $arrow$ `500↵`], [Preset: 500 ms period],
-    [`3`], [Read current blink period],
-    [`4`], [Trigger AHT10 read - print temperature and humidity],
-    [`5` + ID + `↵`], [Set CAN RX software filter (hex CAN ID, e.g. `4c0`)],
-    [`5a` $arrow$ `4c0↵`], [Preset: filter Group 3 frames (`0x4C0`)],
-    [`5b` $arrow$ `4c3↵`], [Preset: filter another group],
-    [`5c` $arrow$ `7ff↵`], [Preset: custom CAN filter],
-    [`6`], [Enter LCD mode sub-menu],
-    [`6a` $arrow$ `0`], [LCD: off],
-    [`6b` $arrow$ `1`], [LCD: CAN RX sensor mode (last received filtered frame)],
-    [`6c` $arrow$ `2`], [LCD: potentiometer mode],
-    [`6d` $arrow$ `3`], [LCD: GPS mode (lat/lon or no-fix with satellite count)],
-    [`6e` $arrow$ `4`], [LCD: local AHT10 mode (direct sensor read)],
-    [`6f` $arrow$ `5`], [LCD: EEPROM text mode (displays rows set by `7`/`8`)],
-    [`7` + text + `↵`], [Write LCD row 1 text (max 16 chars, saved to EEPROM)],
-    [`8` + text + `↵`], [Write LCD row 2 text (max 16 chars, saved to EEPROM)],
+    fill: (_, row) => {
+      let presets = (5, 6, 7, 11, 12, 13, 15, 16, 17, 18, 19, 20)
+      let base = if calc.odd(row) { luma(248) } else { white }
+      if row == 0 { luma(220) } else if presets.contains(row) { color.mix((blue, 8%), (base, 92%)) } else if calc.odd(
+        row,
+      ) { luma(248) } else { none }
+    },
+    [*Command*], [*Expected Subcommand*], [*Action*],
+    [`<CR>`], [n/a], [Carriage return - re-displays the menu],
+    [`0`], [n/a], [Exit (halt)],
+    [`1`], [n/a], [Read potentiometer ADC value (0 - 255)],
+    [`2`], [value + `<CR>`], [Set LED blink full-period in ms (100 - 10 000)],
+    [`2`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(a)]]], [`2000<CR>`], [Preset: 2 s period],
+    [`2`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(b)]]], [`1000<CR>`], [Preset: 1 s period],
+    [`2`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(c)]]], [`500<CR>`], [Preset: 500 ms period],
+    [`3`], [n/a], [Read current blink period],
+    [`4`], [n/a], [Trigger AHT10 read - print temperature and humidity],
+    [`5`], [CAN ID (hex) + `<CR>`], [Set CAN RX software filter (e.g. `4c0`)],
+    [`5`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(a)]]], [`4c0<CR>`], [Preset: filter Group 3 frames (`0x4C0`)],
+    [`5`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(b)]]], [`4c3<CR>`], [Preset: filter another group],
+    [`5`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(c)]]], [`7ff<CR>`], [Preset: custom CAN filter],
+    [`6`], [`0-5`], [Enter LCD mode sub-menu],
+    [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(a)]]], [`0`], [LCD: off],
+    [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(b)]]],
+    [`1`],
+    [LCD: CAN RX sensor mode (last received filtered frame)],
+
+    [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(c)]]], [`2`], [LCD: potentiometer mode],
+    [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(d)]]],
+    [`3`],
+    [LCD: GPS mode (lat/lon or no-fix with satellite count)],
+
+    [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(e)]]], [`4`], [LCD: local AHT10 mode (direct sensor read)],
+    [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(f)]]],
+    [`5`],
+    [LCD: EEPROM text mode (displays rows set by `7`/`8`)],
+
+    [`7`], [text + `<CR>`], [Write LCD row 1 text (max 16 chars, saved to EEPROM)],
+    [`8`], [text + `<CR>`], [Write LCD row 2 text (max 16 chars, saved to EEPROM)],
   ),
   caption: [Available commands via UART / Docklight],
 )
@@ -585,7 +650,7 @@ Decoded CAN sensor frame (after filter is set):
 = Electrical Schematic
 
 #figure(
-  image("../../apps/kicad/output/kicad.pdf"),
+  image("../../apps/kicad/output/kicad_fit_content.svg"),
   caption: [Electrical schematic],
 )
 

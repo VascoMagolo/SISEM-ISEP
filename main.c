@@ -123,7 +123,7 @@ int main(void) {
                     if (aht10_read(raw)) {
                         aht10_parse_temperature(&temperature, raw);
                         aht10_parse_humidity(&humidity, raw);
-                        can_send_sensor(&CAN_NODE, CAN_ID_GROUP, temperature, humidity);
+                        can_send_sensor(&CAN_NODE, CAN_ID_SENSOR, temperature, humidity);
 #                       if defined(FEATURE_LCD)
                             if (lcd_mode == LCD_MODE_LOCAL_AHT10) {
                                 lcd_clear(&I2C_MASTER);
@@ -143,20 +143,27 @@ int main(void) {
 
             if (gps_updated) {
                 gps_updated = false;
+                static bool    prev_fix_valid  = true;
+                static uint8_t prev_satellites = 0;
                 if (gps_data.fix_valid) {
                     uart_printf(&UART_CLI,
                         "\r\n[GPS] %02u:%02u:%02uZ  Lat: %.6f  Lon: %.6f  Satellites: %u\r\n",
                         gps_data.hour, gps_data.minute, gps_data.second,
                         gps_data.latitude, gps_data.longitude, gps_data.satellites);
 #                   if defined(FEATURE_CAN)
-                        can_send_gps(&CAN_NODE, CAN_ID_GROUP, gps_data.latitude, gps_data.longitude);
+                        can_send_gps(&CAN_NODE, CAN_ID_GPS_POS, gps_data);
 #                   endif
-                } else {
+                } else if (prev_fix_valid || gps_data.satellites != prev_satellites) {
                     uart_printf(&UART_CLI,
                         "\r\n[GPS] %02u:%02u:%02uZ  No fix  Satellites: %u\r\n",
                         gps_data.hour, gps_data.minute, gps_data.second,
                         gps_data.satellites);
                 }
+#               if defined(FEATURE_CAN)
+                    can_send_gps_meta(&CAN_NODE, CAN_ID_GPS_META, gps_data);
+#               endif
+                prev_fix_valid  = gps_data.fix_valid;
+                prev_satellites = gps_data.satellites;
 #               if defined(FEATURE_LCD)
                     if (lcd_mode == LCD_MODE_GPS) {
                         static bool    last_fix  = false;
