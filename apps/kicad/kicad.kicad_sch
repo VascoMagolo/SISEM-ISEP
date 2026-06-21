@@ -4494,7 +4494,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 132.08 106.68 270)
+		(at 132.08 106.68 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4504,7 +4504,7 @@
 		(dnp no)
 		(uuid "f5fc3603-b6d9-4c59-bf7b-783ba676bdfc")
 		(property "Reference" "D1"
-			(at 138.43 105.0925 0)
+			(at 125.73 108.2675 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4515,7 +4515,7 @@
 			)
 		)
 		(property "Value" "LED"
-			(at 133.858 107.188 90)
+			(at 137.414 106.68 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects

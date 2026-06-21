@@ -26,6 +26,29 @@ If the schematic undergoes a major revision, we will explicitly export and commi
 
 ## Snapshots
 
+### v2 (21-06-2026)
+
+**Replaced after:** the teacher's feedback on the schematic, which alerted us the LED's polarity was reversed.
+
+<details>
+<summary><b>v2</b> Schematics Gallery</summary>
+
+<table>
+  <tr>
+    <td width="50%"><a href="./snapshots/v2_21-06-2026/kicad.svg"><img src="./snapshots/v2_21-06-2026/kicad.svg" /></a></td>
+    <td width="50%"><a href="./snapshots/v2_21-06-2026/kicad_fit_content.svg"><img src="./snapshots/v2_21-06-2026/kicad_fit_content.svg" /></a></td>
+  </tr>
+  <tr>
+    <td rowspan="2"><b><a href="./snapshots/v2_21-06-2026/kicad.svg">v1 Original [svg]</a></b></td>
+    <td><b><a href="./snapshots/v2_21-06-2026/kicad_fit_content.svg">v1 Modified [svg]</a></b></td>
+  </tr>
+  <tr>
+    <td><b><a href="./snapshots/v2_21-06-2026/kicad_fit_content.pdf">v1 Modified [pdf]</a></b></td>
+  </tr>
+</table>
+
+</details>
+
 ### v1 (17-06-2026)
 
 **Replaced after reading:** [rules and guidelines for drawing good schematics](https://electronics.stackexchange.com/questions/28251/rules-and-guidelines-for-drawing-good-schematics), which prompted improvements to the layout and readability.
