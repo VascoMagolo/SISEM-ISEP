@@ -11,7 +11,7 @@
 
 #if defined(FEATURE_AHT10)
 #   include "aht10.h"
-#endif
+#endif // FEATURE_AHT10
 
 #if defined(FEATURE_LCD)
 #   include "lcd.h"
@@ -22,20 +22,18 @@
             " 0 - Off\r\n"
 #           if defined(FEATURE_CAN)
                 " 1 - Sensor (CAN RX Temp + Humidity)\r\n"
-#           endif
+#           endif // FEATURE_CAN
             " 2 - Potentiometer\r\n"
-#           if defined(FEATURE_AHT10)
-                " 4 - AHT10 (local sensor)\r\n"
-#           endif
 #           if defined(FEATURE_GPS)
                 " 3 - GPS\r\n"
-#           endif
-#           if defined(FEATURE_EEPROM)
-                " 5 - EEPROM text\r\n"
-#           endif
+#           endif // FEATURE_GPS
+#           if defined(FEATURE_AHT10)
+                " 4 - AHT10 (local sensor)\r\n"
+#           endif // FEATURE_AHT10
+            " 5 - Custom text\r\n"
         );
     }
-#endif
+#endif // FEATURE_LCD
 
 #if defined(FEATURE_CAN)
 #   include "can.h"
@@ -47,9 +45,12 @@
 
     void cli_process_can_rx(const UART_t *const handler, uint16_t can_id, const uint8_t data[8]) {
         if (!can_filter_active || can_id != can_filter_id) return;
+
         static uint8_t last_data[8] = { 0 };
         if (memcmp(data, last_data, 8) == 0) return;
+        
         memcpy(last_data, data, 8);
+        
         float temp, hum;
         can_decode_sensor(data, &temp, &hum);
         uart_printf(handler, "\r\n[CAN 0x%03X] Temp: %.1f C  Hum: %.1f %%\r\n", can_id, temp, hum);
@@ -57,19 +58,28 @@
 
     static void apply_can_filter(const UART_t *const handler) {
         uint32_t value = (uint32_t)strtoul(can_id_buf, NULL, 16);
+
         if (value > 0x7FF) {
             uart_send_string(handler, "\r\n[Warning] Adjusted to maximum: 0x7FF.\r\n");
             value = 0x7FF;
         }
+
         can_filter_id     = (uint16_t)value;
         can_filter_active = true;
         uart_printf(handler, "\r\nFiltering CAN ID 0x%03X\r\n", (unsigned)value);
+        
 #       if defined(FEATURE_EEPROM)
             cli_save_settings();
-#       endif
+#       endif // FEATURE_EEPROM
+
         cli_print_menu(handler);
     }
-#endif
+#endif // FEATURE_CAN
+
+#if defined(FEATURE_LCD)
+    char lcd_row1[17] = {0};
+    char lcd_row2[17] = {0};
+#endif // FEATURE_LCD
 
 #if defined(FEATURE_EEPROM)
 #   include "eeprom.h"
@@ -88,31 +98,30 @@
         uint8_t as_bytes[sizeof(struct eeprom_header_fields)];
     } eeprom_header_t;
 
-#   if defined(FEATURE_LCD)
-        char lcd_row1[17] = {0};
-        char lcd_row2[17] = {0};
-#   endif
-
     void cli_save_settings(void) {
-        eeprom_header_t settings = { .as_bytes = {0} };
+        eeprom_header_t settings = {0};
         settings.as_fields.magic          = EEPROM_MAGIC;
         settings.as_fields.timer_interval = timer_interval;
+
 #       if defined(FEATURE_CAN)
             settings.as_fields.can_filter_id     = can_filter_id;
             settings.as_fields.can_filter_active = can_filter_active ? 1 : 0;
-#       endif
+#       endif // FEATURE_CAN
+
 #       if defined(FEATURE_LCD)
             settings.as_fields.lcd_mode = (uint8_t)lcd_mode;
-#       endif
+#       endif // FEATURE_LCD
+
         eeprom_write(EEPROM_SETTINGS_ADDR, settings.as_bytes, sizeof(settings.as_bytes));
+
 #       if defined(FEATURE_LCD)
             eeprom_write(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes),      (const uint8_t *)lcd_row1, 16);
             eeprom_write(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes) + 16, (const uint8_t *)lcd_row2, 16);
-#       endif
+#       endif // FEATURE_LCD
     }
 
     void cli_load_settings(void) {
-        eeprom_header_t settings;
+        eeprom_header_t settings = {0};
         if (!eeprom_read(EEPROM_SETTINGS_ADDR, settings.as_bytes, sizeof(settings.as_bytes))) return;
         if (settings.as_fields.magic != EEPROM_MAGIC) return;
 
@@ -120,42 +129,48 @@
             timer_interval    = settings.as_fields.timer_interval;
             led_tick_interval = (settings.as_fields.timer_interval / 2) / TICK_MS;
         }
+
 #       if defined(FEATURE_CAN)
             can_filter_id     = settings.as_fields.can_filter_id;
             can_filter_active = (settings.as_fields.can_filter_active != 0);
-#       endif
+#       endif // FEATURE_CAN
+
 #       if defined(FEATURE_LCD)
             lcd_mode = (lcd_mode_t)settings.as_fields.lcd_mode;
             eeprom_read(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes),      (uint8_t *)lcd_row1, 16);
             eeprom_read(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes) + 16, (uint8_t *)lcd_row2, 16);
             lcd_row1[16] = '\0';
             lcd_row2[16] = '\0';
-#       endif
+#       endif // FEATURE_LCD
     }
-#endif
+#endif // FEATURE_EEPROM
 
 typedef enum {
     CLI_STATE_MENU,
     CLI_STATE_READING_TIMER,
+
 #   if defined(FEATURE_CAN)
         CLI_STATE_READING_CAN_ID,
-#   endif
+#   endif // FEATURE_CAN
+
 #   if defined(FEATURE_LCD)
         CLI_STATE_LCD_MODE,
-#   endif
-#   if defined(FEATURE_EEPROM) && defined(FEATURE_LCD)
+#   endif // FEATURE_LCD
+
+#   if defined(FEATURE_LCD)
         CLI_STATE_READING_LCD_ROW,
-#   endif
+#   endif // FEATURE_LCD
 } cli_state_t;
 
 static cli_state_t cli_state    = CLI_STATE_MENU;
 static char        timer_buf[6];  // up to 5 digits for 10000 (ms)
 static uint8_t     timer_buf_len = 0;
-#if defined(FEATURE_EEPROM) && defined(FEATURE_LCD)
+
+#if defined(FEATURE_LCD)
     static char    lcd_row_buf[17];
     static uint8_t lcd_row_buf_len = 0;
     static uint8_t lcd_row_target  = 0;
-#endif
+#endif // FEATURE_LCD
 
 void cli_print_header(const UART_t *const handler) {
     uart_send_string(handler, "Grupo 3, Diogo Nogueira/Vasco Magolo, 1241692/1231562\r\n");
@@ -169,17 +184,15 @@ void cli_print_menu(const UART_t *const handler) {
         " 3 - Blinking rate value\r\n"
 #       if defined(FEATURE_AHT10)
             " 4 - Read AHT10 Sensor\r\n"
-#       endif
+#       endif // FEATURE_AHT10
 #       if defined(FEATURE_CAN)
             " 5 - Set CAN RX filter\r\n"
-#       endif
+#       endif // FEATURE_CAN
 #       if defined(FEATURE_LCD)
             " 6 - Set LCD mode\r\n"
-#       endif
-#       if defined(FEATURE_EEPROM) && defined(FEATURE_LCD)
             " 7 - Write LCD row 1\r\n"
             " 8 - Write LCD row 2\r\n"
-#       endif
+#       endif // FEATURE_LCD
     );
 }
 
@@ -198,15 +211,16 @@ static void apply_timer_interval(const UART_t *const handler) {
     led_tick_interval = (value_ms / 2) / TICK_MS;
 
     uart_printf(handler, "\r\nBlink period set to %lu ms\r\n", value_ms);
+
 #   if defined(FEATURE_EEPROM)
         cli_save_settings();
-#   endif
+#   endif // FEATURE_EEPROM
+
     cli_print_menu(handler);
 }
 
 void cli_process_char(const UART_t *const handler, char c) {
     switch (cli_state) {
-
     case CLI_STATE_MENU:
         switch (c) {
         case '0':
@@ -231,33 +245,35 @@ void cli_process_char(const UART_t *const handler, char c) {
                 float temp = 0.0f;
                 float hum  = 0.0f;
                 uint8_t data[6] = { 0 };
+
                 uart_send_string(handler, "\r\nReading AHT10...\r\n");
                 if (aht10_read(data)) {
                     aht10_parse_humidity(&hum, data);
                     aht10_parse_temperature(&temp, data);
-                    uart_printf(handler, "\r\nTemperature: %.1f C\r\nHumidity: %.1f %%\r\n",
-                        temp, hum);
+
+                    uart_printf(handler, "\r\nTemperature: %.1f C\r\nHumidity: %.1f %%\r\n", temp, hum);
                 } else {
                     uart_send_string(handler, "\r\n[Error] Sensor busy or not responding.\r\n");
                 }
+
                 cli_print_menu(handler);
                 break;
             }
-#       endif
+#       endif // FEATURE_AHT10
+
 #       if defined(FEATURE_CAN)
             case '5':
                 uart_send_string(handler, "\r\nCAN ID to filter (hex, e.g. 4C0):\r\n");
                 can_id_buf_len = 0;
                 cli_state = CLI_STATE_READING_CAN_ID;
                 break;
-#       endif
+#       endif // FEATURE_CAN
+
 #       if defined(FEATURE_LCD)
             case '6':
                 print_lcd_menu(handler);
                 cli_state = CLI_STATE_LCD_MODE;
                 break;
-#       endif
-#       if defined(FEATURE_EEPROM) && defined(FEATURE_LCD)
             case '7':
                 uart_send_string(handler, "\r\nLCD row 1 text (max 16 chars):\r\n");
                 lcd_row_buf_len = 0;
@@ -270,7 +286,8 @@ void cli_process_char(const UART_t *const handler, char c) {
                 lcd_row_target  = 2;
                 cli_state = CLI_STATE_READING_LCD_ROW;
                 break;
-#       endif
+#       endif // FEATURE_LCD
+
         default:
             uart_printf(handler, "\r\n[Error] '%c' is not a valid option.\r\n", c);
             cli_print_menu(handler);
@@ -285,6 +302,7 @@ void cli_process_char(const UART_t *const handler, char c) {
                 cli_print_menu(handler);
                 break;
             }
+            
             timer_buf[timer_buf_len] = '\0';
             apply_timer_interval(handler);
             cli_state = CLI_STATE_MENU;
@@ -294,7 +312,9 @@ void cli_process_char(const UART_t *const handler, char c) {
             cli_print_menu(handler);
         } else if (timer_buf_len < (sizeof(timer_buf) - 1)) {
             timer_buf[timer_buf_len++] = c;
-            while (UART_IsTXFIFOFull(handler)) {}
+            while (UART_IsTXFIFOFull(handler)) {
+                // waits
+            }
             UART_TransmitWord(handler, (uint8_t)c);
         }
         break;
@@ -307,6 +327,7 @@ void cli_process_char(const UART_t *const handler, char c) {
                 lcd_clear(&I2C_MASTER);
                 uart_send_string(handler, "\r\nLCD off.\r\n");
                 break;
+
 #           if defined(FEATURE_CAN)
                 case '1':
                     lcd_mode = LCD_MODE_CAN_RX_AHT10;
@@ -314,12 +335,14 @@ void cli_process_char(const UART_t *const handler, char c) {
                     lcd_write(&I2C_MASTER, 1, "Waiting CAN RX..");
                     uart_send_string(handler, "\r\nLCD: Sensor mode.\r\n");
                     break;
-#           endif
+#           endif // FEATURE_CAN
+
             case '2':
                 lcd_mode = LCD_MODE_POT;
                 lcd_clear(&I2C_MASTER);
                 uart_send_string(handler, "\r\nLCD: Potentiometer mode.\r\n");
                 break;
+
 #           if defined(FEATURE_AHT10)
                 case '4':
                     lcd_mode = LCD_MODE_LOCAL_AHT10;
@@ -327,7 +350,8 @@ void cli_process_char(const UART_t *const handler, char c) {
                     lcd_write(&I2C_MASTER, 1, "AHT10 local");
                     uart_send_string(handler, "\r\nLCD: AHT10 local sensor mode.\r\n");
                     break;
-#           endif
+#           endif // FEATURE_AHT10
+
 #           if defined(FEATURE_GPS)
                 case '3':
                     lcd_mode = LCD_MODE_GPS;
@@ -335,31 +359,30 @@ void cli_process_char(const UART_t *const handler, char c) {
                     lcd_write(&I2C_MASTER, 1, "Waiting GPS fix.");
                     uart_send_string(handler, "\r\nLCD: GPS mode.\r\n");
                     break;
-#           endif
-#           if defined(FEATURE_EEPROM)
-                case '5': {
-                    char slice[17];
-                    lcd_mode = LCD_MODE_EEPROM;
-                    lcd_clear(&I2C_MASTER);
-                    snprintf(slice, sizeof(slice), "%-16s", lcd_row1);
-                    lcd_write(&I2C_MASTER, 1, slice);
-                    snprintf(slice, sizeof(slice), "%-16s", lcd_row2);
-                    lcd_write(&I2C_MASTER, 2, slice);
-                    uart_send_string(handler, "\r\nLCD: EEPROM text mode.\r\n");
-                    break;
-                }
-#           endif
+#           endif // FEATURE_GPS
+
+            case '5': {
+                lcd_mode = LCD_MODE_TEXT;
+                lcd_clear(&I2C_MASTER);
+                lcd_printf(&I2C_MASTER, 1, "%-16s", lcd_row1)
+                lcd_printf(&I2C_MASTER, 2, "%-16s", lcd_row2);
+                uart_send_string(handler, "\r\nLCD: Custom text mode.\r\n");
+                break;
+            }
+
             default:
                 uart_printf(handler, "\r\n[Error] '%c' is not a valid option.\r\n", c);
                 break;
             }
+
 #           if defined(FEATURE_EEPROM)
                 cli_save_settings();
-#           endif
+#           endif // FEATURE_EEPROM
+
             cli_state = CLI_STATE_MENU;
             cli_print_menu(handler);
             break;
-#   endif
+#   endif // FEATURE_LCD
 
 #   if defined(FEATURE_CAN)
         case CLI_STATE_READING_CAN_ID:
@@ -369,6 +392,7 @@ void cli_process_char(const UART_t *const handler, char c) {
                     cli_print_menu(handler);
                     break;
                 }
+
                 can_id_buf[can_id_buf_len] = '\0';
                 apply_can_filter(handler);
                 cli_state = CLI_STATE_MENU;
@@ -382,32 +406,32 @@ void cli_process_char(const UART_t *const handler, char c) {
                 UART_TransmitWord(handler, (uint8_t)c);
             }
             break;
-#   endif
+#   endif // FEATURE_CAN
 
-#   if defined(FEATURE_EEPROM) && defined(FEATURE_LCD)
+#   if defined(FEATURE_LCD)
         case CLI_STATE_READING_LCD_ROW:
             if (c == '\r' || c == '\n') {
                 char *dst = (lcd_row_target == 1) ? lcd_row1 : lcd_row2;
+
                 memset(dst, 0, 17);
                 memcpy(dst, lcd_row_buf, lcd_row_buf_len);
-                cli_save_settings();
-#               if defined(FEATURE_LCD)
-                    if (lcd_mode == LCD_MODE_EEPROM) {
-                        char slice[17];
-                        snprintf(slice, sizeof(slice), "%-16s", dst);
-                        lcd_write(&I2C_MASTER, (int)lcd_row_target, slice);
-                    }
-#               endif
-                uart_printf(handler, "\r\nLCD row %u saved.\r\n", (unsigned)lcd_row_target);
+#               if defined(FEATURE_EEPROM)
+                    cli_save_settings();
+#               endif // FEATURE_EEPROM
+
+                uart_printf(handler, "\r\nLCD row %u written.\r\n", (unsigned)lcd_row_target);
                 cli_state = CLI_STATE_MENU;
                 cli_print_menu(handler);
             } else if (lcd_row_buf_len < 16) {
                 lcd_row_buf[lcd_row_buf_len++] = c;
-                while (UART_IsTXFIFOFull(handler)) {}
+                while (UART_IsTXFIFOFull(handler)) {
+                    // waits
+                }
+                
                 UART_TransmitWord(handler, (uint8_t)c);
             }
             break;
-#   endif
+#   endif // FEATURE_LCD
     }
 }
 

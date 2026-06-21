@@ -108,7 +108,7 @@ void can_send(const CAN_NODE_t* can_node, uint16_t can_id, uint8_t* data, uint8_
         *temp = (float)temp_raw / 10.0f - 55.0f;
         *hum = (float)hum_raw / 10.0f;
     }
-#endif
+#endif // FEATURE_AHT10
 
 #if defined(FEATURE_GPS)
     void can_send_gps(const CAN_NODE_t* can_node, uint16_t can_id, gps_data_t data) {
@@ -132,9 +132,9 @@ void can_send(const CAN_NODE_t* can_node, uint16_t can_id, uint8_t* data, uint8_
     void can_send_gps_meta(const CAN_NODE_t* can_node, uint16_t can_id, gps_data_t data) {
         uint8_t payload[5] = {
             data.hour, data.minute, data.second, data.satellites,
-            data.fix_valid ? 1u : 0u
+            data.fix_valid ? 1 : 0
         };
         
         can_send(can_node, can_id, payload, 5);
     }
-#endif
+#endif // FEATURE_GPS

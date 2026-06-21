@@ -12,7 +12,7 @@ Event-driven bare-metal firmware for the XMC4200. A 10 ms system tick drives all
 - **Potentiometer** value read via ADC, applied to PWM duty cycle
 - **AHT10** temperature and humidity sensor read over I2C
 - **CAN** periodic broadcast of sensor data every 500 ms; receive and parse frames from other groups
-- **LCD** 16x2 display over I2C, mode selectable via CLI (off / CAN RX AHT10 / potentiometer / local AHT10 / GPS / EEPROM text)
+- **LCD** 16x2 display over I2C, mode selectable via CLI (off / CAN RX AHT10 / potentiometer / local AHT10 / GPS / Custom text)
 - **GPS** u-blox NEO-6M reads NMEA `$GPGGA` frames
 - **EEPROM** AT24C32E persists blink period, CAN filter, LCD mode, and LCD text rows across power cycles
 
@@ -55,9 +55,9 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 | `6c` → `2`     | Preset: Potentiometer info                           |
 | `6d` → `3`     | Preset: GPS coordinates                              |
 | `6e` → `4`     | Preset: Local AHT10 info                             |
-| `6f` → `5`     | Preset: EEPROM stored text                           |
-| `7`            | Write LCD row 1 text (max 16 chars, saved to EEPROM) |
-| `8`            | Write LCD row 2 text (max 16 chars, saved to EEPROM) |
+| `6f` → `5`     | Preset: Custom text                                  |
+| `7`            | Write LCD row 1 text (max 16 chars)                  |
+| `8`            | Write LCD row 2 text (max 16 chars)                  |
 
 ## CAN Bus
 

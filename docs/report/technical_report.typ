@@ -298,7 +298,7 @@ The 16x2 LCD uses the HD44780 controller behind a PCF8574 I2C I/O expander at ad
     [`LCD_MODE_POT`], [`6`$arrow$`2`], [Potentiometer ADC value, refreshed every 100 ms],
     [`LCD_MODE_GPS`], [`6`$arrow$`3`], [Lat/Lon when fix valid; "No GPS fix" + satellite count otherwise],
     [`LCD_MODE_LOCAL_AHT10`], [`6`$arrow$`4`], [Local AHT10 temperature and humidity],
-    [`LCD_MODE_EEPROM`], [`6`$arrow$`5`], [Two custom text rows stored in EEPROM (written via CLI `7`/`8`)],
+    [`LCD_MODE_TEXT`], [`6`$arrow$`5`], [Two custom text rows (written via CLI `7`/`8`; persisted to EEPROM if available)],
   ),
   caption: [LCD display modes],
 )
@@ -624,10 +624,10 @@ Grupo 3, Diogo Nogueira/Vasco Magolo, 1241692/1231562
     [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(e)]]], [`4`], [LCD: local AHT10 mode (direct sensor read)],
     [`6`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(f)]]],
     [`5`],
-    [LCD: EEPROM text mode (displays rows set by `7`/`8`)],
+    [LCD: Custom text mode (displays rows set by `7`/`8`)],
 
-    [`7`], [text + `<CR>`], [Write LCD row 1 text (max 16 chars, saved to EEPROM)],
-    [`8`], [text + `<CR>`], [Write LCD row 2 text (max 16 chars, saved to EEPROM)],
+    [`7`], [text + `<CR>`], [Write LCD row 1 text (max 16 chars)],
+    [`8`], [text + `<CR>`], [Write LCD row 2 text (max 16 chars)],
   ),
   caption: [Available commands via UART / Docklight],
 )

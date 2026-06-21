@@ -8,7 +8,9 @@
 // Spin-wait for the AT24C32E write cycle (10ms max per datasheet)
 static void delay_write(void) {
     volatile uint32_t count = 0x40000;
-    while (--count) {}
+    while (--count) {
+        // waits
+    }
 }
 
 void eeprom_write(uint16_t addr, const uint8_t *data, uint16_t len) {
@@ -16,11 +18,14 @@ void eeprom_write(uint16_t addr, const uint8_t *data, uint16_t len) {
     while (len > 0) {
         uint16_t page_space = EEPROM_PAGE_SIZE - (addr % EEPROM_PAGE_SIZE);
         uint16_t chunk = (len < page_space) ? len : page_space;
+
         buf[0] = (uint8_t)(addr >> 8);
         buf[1] = (uint8_t)(addr & 0xFF);
         memcpy(buf + 2, data, chunk);
+        
         i2c_transmit(EEPROM_ADDRESS, buf, (uint32_t)(2 + chunk));
         delay_write();
+        
         addr += chunk;
         data += chunk;
         len  -= chunk;

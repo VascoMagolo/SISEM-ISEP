@@ -15,8 +15,7 @@ static void i2c_write(I2C_MASTER_t* controller, uint8_t data) {
     while (I2C_MASTER_IsTxBusy(controller));
 }
 
-static void lcd_send_nibble(I2C_MASTER_t* controller, uint8_t nibble,
-                            uint8_t register_select) {
+static void lcd_send_nibble(I2C_MASTER_t* controller, uint8_t nibble, uint8_t register_select) {
     uint8_t i2c_byte = nibble | register_select | 0x08; // 0x08 keeps backlight on
 
     i2c_write(controller, i2c_byte | 0x04);             // EN = 1: latch data
@@ -46,8 +45,7 @@ void lcd_clear(I2C_MASTER_t* controller) {
 }
 
 void lcd_init(I2C_MASTER_t* controller) {
-    for (volatile uint32_t power_on_delay = 0; power_on_delay < 50000;
-         power_on_delay++);
+    for (volatile uint32_t power_on_delay = 0; power_on_delay < 50000; power_on_delay++);
     lcd_send_command(controller, 0x33);  // reset step 1: 8-bit mode
     lcd_send_command(controller, 0x32);  // reset step 2: switch to 4-bit mode
     lcd_send_command(controller, 0x28);  // 4-bit mode, 2 rows, 5x8 matrix

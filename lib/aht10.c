@@ -17,13 +17,13 @@ static void delay_aht10(void) {
     }
 }
 
-/* byte 1: HHHHHHHH (most significant H bits)
- * byte 2: HHHHHHHH (middle significant H bits)
- * byte 3(top 4 bits): HHHH (least significant H bits)
- * byte 3(least 4 bits): TTTT (most significant T bits)
- * byte 4: TTTTTTTT (middle significant T bits)
- * byte 5: TTTTTTTT (least significant T bits)
- */
+// byte 1: HHHHHHHH (most significant H bits)
+// byte 2: HHHHHHHH (middle significant H bits)
+// byte 3(top 4 bits): HHHH (least significant H bits)
+// byte 3(least 4 bits): TTTT (most significant T bits)
+// byte 4: TTTTTTTT (middle significant T bits)
+// byte 5: TTTTTTTT (least significant T bits)
+
 void aht10_parse_temperature(volatile float* out, uint8_t data[]) {
     uint32_t t_part1 = ((uint32_t)(data[3] & 0x0F)) << 16;
     uint32_t t_part2 = (uint32_t)data[4] << 8;
@@ -49,9 +49,7 @@ bool aht10_read(uint8_t data[6]) {
 
     // send measurement trigger
     i2c_transmit(AHT10_ADDRESS, cmd, 3);
-
     delay_aht10();
-
     // read 6 bytes of data
     i2c_receive(AHT10_ADDRESS, data, 6);
 

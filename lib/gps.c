@@ -26,16 +26,15 @@ static float parse_coord(const char* val, char dir) {
     return result;
 }
 
-/*
- * f[0]=$GPGGA
- * f[1]=HHMMSS
- * f[2]=lat
- * f[3]=N/S
- * f[4]=lon
- * f[5]=E/W
- * f[6]=fix
- * f[7]=satellites
- */
+// f[0]=$GPGGA
+// f[1]=HHMMSS
+// f[2]=lat
+// f[3]=N/S
+// f[4]=lon
+// f[5]=E/W
+// f[6]=fix
+// f[7]=satellites
+
 static void parse_gpgga(char* sentence) {
     char* star = strchr(sentence, '*');
     if (star) {
