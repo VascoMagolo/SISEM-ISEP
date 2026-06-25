@@ -40,8 +40,8 @@
 
     static char     can_id_buf[5];  // up to 4 hex digits for 0x7FF
     static uint8_t  can_id_buf_len  = 0;
-    static uint16_t can_filter_id   = 0;
-    static bool     can_filter_active = false;
+    uint16_t can_filter_id   = 0;
+    bool     can_filter_active = false;
 
     void cli_process_can_rx(const UART_t *const handler, uint16_t can_id, const uint8_t data[8]) {
         if (!can_filter_active || can_id != can_filter_id) return;
@@ -99,7 +99,7 @@
     } eeprom_header_t;
 
     void cli_save_settings(void) {
-        eeprom_header_t settings = {0};
+        eeprom_header_t settings = {{0}};
         settings.as_fields.magic          = EEPROM_MAGIC;
         settings.as_fields.timer_interval = timer_interval;
 
@@ -121,7 +121,7 @@
     }
 
     void cli_load_settings(void) {
-        eeprom_header_t settings = {0};
+        eeprom_header_t settings = {{0}};
         if (!eeprom_read(EEPROM_SETTINGS_ADDR, settings.as_bytes, sizeof(settings.as_bytes))) return;
         if (settings.as_fields.magic != EEPROM_MAGIC) return;
 
@@ -136,11 +136,19 @@
 #       endif // FEATURE_CAN
 
 #       if defined(FEATURE_LCD)
-            lcd_mode = (lcd_mode_t)settings.as_fields.lcd_mode;
-            eeprom_read(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes),      (uint8_t *)lcd_row1, 16);
-            eeprom_read(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes) + 16, (uint8_t *)lcd_row2, 16);
+            if (settings.as_fields.lcd_mode <= (uint8_t)LCD_MODE_TEXT) {
+                lcd_mode = (lcd_mode_t)settings.as_fields.lcd_mode;
+            }
+            
+            if (!eeprom_read(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes),      (uint8_t *)lcd_row1, 16)) return;
+            if (!eeprom_read(EEPROM_SETTINGS_ADDR + sizeof(settings.as_bytes) + 16, (uint8_t *)lcd_row2, 16)) return;
+
             lcd_row1[16] = '\0';
             lcd_row2[16] = '\0';
+            if (lcd_mode == LCD_MODE_TEXT) {
+                lcd_printf(&I2C_MASTER, 1, "%-16s", lcd_row1);
+                lcd_printf(&I2C_MASTER, 2, "%-16s", lcd_row2);
+            }
 #       endif // FEATURE_LCD
     }
 #endif // FEATURE_EEPROM
@@ -263,7 +271,7 @@ void cli_process_char(const UART_t *const handler, char c) {
 
 #       if defined(FEATURE_CAN)
             case '5':
-                uart_send_string(handler, "\r\nCAN ID to filter (hex, e.g. 4C0):\r\n");
+                uart_send_string(handler, "\r\nCAN ID to filter (hex, e.g. 4C0); empty to disable:\r\n");
                 can_id_buf_len = 0;
                 cli_state = CLI_STATE_READING_CAN_ID;
                 break;
@@ -320,7 +328,8 @@ void cli_process_char(const UART_t *const handler, char c) {
         break;
 
 #   if defined(FEATURE_LCD)
-        case CLI_STATE_LCD_MODE:
+        case CLI_STATE_LCD_MODE: {
+            bool mode_changed = true;
             switch (c) {
             case '0':
                 lcd_mode = LCD_MODE_OFF;
@@ -364,7 +373,7 @@ void cli_process_char(const UART_t *const handler, char c) {
             case '5': {
                 lcd_mode = LCD_MODE_TEXT;
                 lcd_clear(&I2C_MASTER);
-                lcd_printf(&I2C_MASTER, 1, "%-16s", lcd_row1)
+                lcd_printf(&I2C_MASTER, 1, "%-16s", lcd_row1);
                 lcd_printf(&I2C_MASTER, 2, "%-16s", lcd_row2);
                 uart_send_string(handler, "\r\nLCD: Custom text mode.\r\n");
                 break;
@@ -372,22 +381,29 @@ void cli_process_char(const UART_t *const handler, char c) {
 
             default:
                 uart_printf(handler, "\r\n[Error] '%c' is not a valid option.\r\n", c);
+                mode_changed = false;
                 break;
             }
 
 #           if defined(FEATURE_EEPROM)
-                cli_save_settings();
+                if (mode_changed) cli_save_settings();
 #           endif // FEATURE_EEPROM
 
             cli_state = CLI_STATE_MENU;
             cli_print_menu(handler);
             break;
+        }
 #   endif // FEATURE_LCD
 
 #   if defined(FEATURE_CAN)
         case CLI_STATE_READING_CAN_ID:
             if (c == '\r' || c == '\n') {
                 if (can_id_buf_len == 0) {
+                    can_filter_active = false;
+                    uart_send_string(handler, "\r\nCAN filter disabled.\r\n");
+#                   if defined(FEATURE_EEPROM)
+                        cli_save_settings();
+#                   endif // FEATURE_EEPROM
                     cli_state = CLI_STATE_MENU;
                     cli_print_menu(handler);
                     break;
@@ -415,6 +431,11 @@ void cli_process_char(const UART_t *const handler, char c) {
 
                 memset(dst, 0, 17);
                 memcpy(dst, lcd_row_buf, lcd_row_buf_len);
+                
+                if (lcd_mode == LCD_MODE_TEXT) {
+                    lcd_printf(&I2C_MASTER, lcd_row_target, "%-16s", dst);
+                }
+
 #               if defined(FEATURE_EEPROM)
                     cli_save_settings();
 #               endif // FEATURE_EEPROM

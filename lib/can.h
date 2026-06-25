@@ -26,9 +26,10 @@ extern uint8_t length_rx;
 void can_interrupt();
 void can_send(const CAN_NODE_t* can_node, uint16_t can_id, uint8_t* data, uint8_t dlc);
 
+void can_decode_sensor(const uint8_t data[8], float* temp, float* hum);
+
 #if defined(FEATURE_AHT10)
     void can_send_sensor(const CAN_NODE_t* can_node, uint16_t can_id, float temperature, float humidity);
-    void can_decode_sensor(const uint8_t data[8], float* temp, float* hum);
 #endif // FEATURE_AHT10
 
 #if defined(FEATURE_GPS)

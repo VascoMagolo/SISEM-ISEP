@@ -70,6 +70,23 @@ void can_send(const CAN_NODE_t* can_node, uint16_t can_id, uint8_t* data, uint8_
     }
 }
 
+void can_decode_sensor(const uint8_t data[8], float* temp, float* hum) {
+    uint32_t temp_b0 = (uint32_t)data[0];
+    uint32_t temp_b1 = (uint32_t)data[1] << 8;
+    uint32_t temp_b2 = (uint32_t)data[2] << 16;
+    uint32_t temp_b3 = (uint32_t)data[3] << 24;
+    uint32_t temp_raw = temp_b0 | temp_b1 | temp_b2 | temp_b3;
+
+    uint32_t hum_b0 = (uint32_t)data[4];
+    uint32_t hum_b1 = (uint32_t)data[5] << 8;
+    uint32_t hum_b2 = (uint32_t)data[6] << 16;
+    uint32_t hum_b3 = (uint32_t)data[7] << 24;
+    uint32_t hum_raw = hum_b0 | hum_b1 | hum_b2 | hum_b3;
+
+    *temp = (float)temp_raw / 10.0f - 55.0f;
+    *hum = (float)hum_raw / 10.0f;
+}
+
 #if defined(FEATURE_AHT10)
     void can_send_sensor(const CAN_NODE_t* can_node, uint16_t can_id,
                         float temperature, float humidity) {
@@ -90,23 +107,6 @@ void can_send(const CAN_NODE_t* can_node, uint16_t can_id, uint8_t* data, uint8_
         payload[7] = (uint8_t)(hum_enc >> 24);
 
         can_send(can_node, can_id, payload, 8);
-    }
-
-    void can_decode_sensor(const uint8_t data[8], float* temp, float* hum) {
-        uint32_t temp_b0 = (uint32_t)data[0];
-        uint32_t temp_b1 = (uint32_t)data[1] << 8;
-        uint32_t temp_b2 = (uint32_t)data[2] << 16;
-        uint32_t temp_b3 = (uint32_t)data[3] << 24;
-        uint32_t temp_raw = temp_b0 | temp_b1 | temp_b2 | temp_b3;
-
-        uint32_t hum_b0 = (uint32_t)data[4];
-        uint32_t hum_b1 = (uint32_t)data[5] << 8;
-        uint32_t hum_b2 = (uint32_t)data[6] << 16;
-        uint32_t hum_b3 = (uint32_t)data[7] << 24;
-        uint32_t hum_raw = hum_b0 | hum_b1 | hum_b2 | hum_b3;
-
-        *temp = (float)temp_raw / 10.0f - 55.0f;
-        *hum = (float)hum_raw / 10.0f;
     }
 #endif // FEATURE_AHT10
 

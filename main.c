@@ -74,6 +74,16 @@ int main(void) {
 
 #   if defined(FEATURE_EEPROM)
         cli_load_settings();
+        uart_send_string(&UART_CLI, "[EEPROM] Loaded settings:\r\n");
+        uart_printf(&UART_CLI, "  Timer interval : %lu ms\r\n", timer_interval);
+#       if defined(FEATURE_CAN)
+            uart_printf(&UART_CLI, "  CAN filter ID  : 0x%03X (%s)\r\n", (unsigned)can_filter_id, can_filter_active ? "active" : "inactive");
+#       endif // FEATURE_CAN
+#       if defined(FEATURE_LCD)
+            uart_printf(&UART_CLI, "  LCD mode       : %u\r\n", (unsigned)lcd_mode);
+            uart_printf(&UART_CLI, "  LCD row 1      : \"%s\"\r\n", lcd_row1);
+            uart_printf(&UART_CLI, "  LCD row 2      : \"%s\"\r\n", lcd_row2);
+#       endif // FEATURE_LCD
 #   endif // FEATURE_EEPROM
 
     cli_print_header(&UART_CLI);

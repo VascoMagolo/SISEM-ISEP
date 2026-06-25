@@ -282,6 +282,8 @@ The temperature encoding uses a +55 offset so that the full AHT10 sensor range (
 
 Receive is interrupt-driven: `can_interrupt()` fires when message object 0 receives a frame, copies the payload into `data_rx`, and sets `flag_data_rx`. The main loop dispatches to `cli_process_can_rx`, which applies the CLI-configured software filter before printing the decoded temperature and humidity to Docklight.
 
+#pagebreak()
+
 == LCD Display
 
 The 16x2 LCD uses the HD44780 controller behind a PCF8574 I2C I/O expander at address 0x27, sharing the I2C bus with the AHT10 and EEPROM. The driver transmits 4-bit nibbles, toggling the `EN` line between writes. Six display modes are selectable via CLI command `6`:
@@ -298,14 +300,14 @@ The 16x2 LCD uses the HD44780 controller behind a PCF8574 I2C I/O expander at ad
     [`LCD_MODE_POT`], [`6`$arrow$`2`], [Potentiometer ADC value, refreshed every 100 ms],
     [`LCD_MODE_GPS`], [`6`$arrow$`3`], [Lat/Lon when fix valid; "No GPS fix" + satellite count otherwise],
     [`LCD_MODE_LOCAL_AHT10`], [`6`$arrow$`4`], [Local AHT10 temperature and humidity],
-    [`LCD_MODE_TEXT`], [`6`$arrow$`5`], [Two custom text rows (written via CLI `7`/`8`; persisted to EEPROM if available)],
+    [`LCD_MODE_TEXT`],
+    [`6`$arrow$`5`],
+    [Two custom text rows (written via CLI `7`/`8`; persisted to EEPROM if available)],
   ),
   caption: [LCD display modes],
 )
 
 Each mode in the main loop tracks previously displayed values in `static` variables and skips the I2C write when the content has not changed, preventing unnecessary LCD flicker.
-
-#pagebreak()
 
 == GPS Module
 
@@ -355,8 +357,6 @@ $GPGGA,HHMMSS.ss,LLLL.LL,a,YYYYY.YY,b,q,nn,...
 
 When `fix_valid` is true the parsed coordinates are printed to Docklight and forwarded on CAN. No coordinates are stored or transmitted during a fix loss - only the satellite count and the no-fix indication are updated. The LCD GPS mode redraws only when latitude, longitude, or satellite count changes.
 
-#pagebreak()
-
 == EEPROM Settings Persistence
 
 The AT24C32E is a 4 096-byte I2C EEPROM at address 0xA0. A 9-byte header at address `0x0000` persists all user-configurable state:
@@ -379,7 +379,7 @@ The AT24C32E is a 4 096-byte I2C EEPROM at address 0xA0. A 9-byte header at addr
 
 Two 16-byte slots follow the header: `0x0009` for LCD row 1 and `0x0019` for LCD row 2. These are written via CLI commands `7` and `8`.
 
-On boot, `cli_load_settings()` reads the header and validates the magic byte. If it matches `0xAB`, all settings are restored into `app_state` globals. If not (first power-on or data corruption), the firmware starts with compile-time defaults. Settings are automatically re-saved after every CLI command that changes them.
+On boot, `cli_load_settings()` reads the header and validates the magic byte. If it matches `0xAB`, all settings are restored: `app_state` globals are updated and, when `lcd_mode` is `LCD_MODE_TEXT`, the stored text rows are written to the display immediately. If not (first power-on or data corruption), the firmware starts with compile-time defaults. Settings are automatically re-saved after every CLI command that changes them.
 
 #pagebreak()
 
@@ -574,13 +574,17 @@ typedef union {
 
 `cli_save_settings` populates `settings.as_fields.*` and writes `settings.as_bytes` to the EEPROM in a single call, followed by the two LCD text row buffers. `cli_load_settings` reads the raw bytes, checks `as_fields.magic`, and silently returns without applying anything if validation fails.
 
-#pagebreak()
-
 = Commands
 
-The system communicates over UART at *9600 8N1*. Open `apps/docklight.ptp` for pre-configured send sequences. On startup, the system prints the group header:
+The system communicates over UART at *9600 8N1*. Open `apps/docklight.ptp` for pre-configured send sequences. On startup, when `FEATURE_EEPROM` is defined, the system first prints a diagnostic dump of the loaded settings, followed by the group header:
 
 ```
+[EEPROM] Loaded settings:
+  Timer interval : 2000 ms
+  CAN filter ID  : 0x4C0 (active)
+  LCD mode       : 5
+  LCD row 1      : "Hello"
+  LCD row 2      : "World"
 Grupo 3, Diogo Nogueira/Vasco Magolo, 1241692/1231562
 ```
 
@@ -606,7 +610,7 @@ Grupo 3, Diogo Nogueira/Vasco Magolo, 1241692/1231562
     [`2`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(c)]]], [`500<CR>`], [Preset: 500 ms period],
     [`3`], [n/a], [Read current blink period],
     [`4`], [n/a], [Trigger AHT10 read - print temperature and humidity],
-    [`5`], [CAN ID (hex) + `<CR>`], [Set CAN RX software filter (e.g. `4c0`)],
+    [`5`], [CAN ID (hex) + `<CR>`], [Set CAN RX software filter (e.g. `4c0`); empty `<CR>` disables the filter],
     [`5`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(a)]]], [`4c0<CR>`], [Preset: filter Group 3 frames (`0x4C0`)],
     [`5`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(b)]]], [`4c3<CR>`], [Preset: filter another group],
     [`5`#place(dx: 32pt, dy: -0.5em)[#text(size: 0.75em)[(c)]]], [`7ff<CR>`], [Preset: custom CAN filter],
