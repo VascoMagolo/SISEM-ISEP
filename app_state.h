@@ -6,6 +6,7 @@
 
 extern volatile uint16_t potentiometer_value;
 extern volatile bool     led_blinking;
+extern volatile bool     led_on;
 extern volatile uint32_t led_tick_interval;
 extern volatile uint32_t timer_interval;
 

@@ -50,8 +50,10 @@ void system_tick(void) {
 
     if (!led_blinking) {
         DIGITAL_IO_SetOutputHigh(&DIGITAL_IO_LED);
+        led_on = true;
     } else if (tick_count % led_tick_interval == 0) {
         DIGITAL_IO_ToggleOutput(&DIGITAL_IO_LED);
+        led_on = !led_on;
     }
 }
 
