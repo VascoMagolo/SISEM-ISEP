@@ -1,4 +1,4 @@
-# SISEM Tarefa B - Grupo 3
+# SISEM Tarefa Final - Grupo 3
 
 **Board:** Infineon XMC4200 Platform2Go  
 **Course:** LETI-SISEM, ISEP  
