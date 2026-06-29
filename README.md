@@ -16,6 +16,30 @@ Event-driven bare-metal firmware for the XMC4200. A 10 ms system tick drives all
 - **GPS** u-blox NEO-6M reads NMEA `$GPGGA` frames
 - **EEPROM** AT24C32E persists blink period, CAN filter, LCD mode, and LCD text rows across power cycles
 
+## Technical Report
+
+Technical report [available here](docs/report/technical_report.pdf).
+
+## Software used
+
+- **Development**: [DAVE IDE (Infineon Technologies)](https://www.infineon.com/design-resources/development-tools/sdk/dave)
+- **UART**: [Docklight](https://docklight.de)
+  - uses [`apps/docklight.ptp`](apps/docklight.ptp) file
+- **Variables Watcher**: [Micrium](https://reply.infineon.com/uC-Probe-XMC-software-download_ID712)
+  - uses [`apps/micrium.wspx`](apps/micrium.wspx) file
+- **CAN**: [Cangaroo](apps/can/CAN.cangaroo)
+  - uses [class DBC](apps/can/DBC_TarefaB.dbc) or [project-scoped DBC](apps/can/Group3.dbc) files
+- **Electrical Schematic**: [KiCad](https://www.kicad.org)
+  - relevant files:
+    - [`apps/kicad/output/README.md`](apps/kicad/output/README.md) contains useful information about the output files
+    - [`.kicad_sch`](apps/kicad/kicad.kicad_sch) contains the schematic project file
+    - [`.kicad_sym`](apps/kicad/kicad.kicad_sym) contains the symbol library project file
+  - relevant links: [Rules and Guidelines for Drawing Good Schematics](https://electronics.stackexchange.com/questions/28251/rules-and-guidelines-for-drawing-good-schematics)
+
+## Schematic
+
+![Schematic](apps/kicad/output/kicad_fit_content.svg)
+
 ## Feature flags
 
 Hardware modules can be individually enabled or disabled in [`config.h`](config.h):
@@ -61,32 +85,44 @@ Connect at **9600 8N1**. Open [`apps/docklight.ptp`](apps/docklight.ptp) for pre
 
 ## CAN Bus
 
-### Sensor frame (Tx)
+The following frames scenario as considering the usage of the project-scoped DBC file [`apps/can/Group3.dbc`](apps/can/Group3.dbc).
+
+### AHT10 Sensor frame
 
 | Field     | Value                                          |
 | --------- | ---------------------------------------------- |
-| CAN ID    | `0x4C0` (1216) - `Msg_Group_3`                 |
+| CAN ID    | `0x4C0` (Grp3_Sensor)                        |
 | DLC       | 8 bytes                                        |
 | Period    | 500 ms                                         |
 | Bytes 0-3 | Temperature - `physical = raw * 0.1 - 55` (°C) |
 | Bytes 4-7 | Humidity - `physical = raw * 0.1` (%)          |
 
-### GPS frame (Tx)
+### GPS Position frame
 
 | Field     | Value                                         |
 | --------- | --------------------------------------------- |
-| CAN ID    | `0x4C0` (1216) - `Msg_Group_3`                |
+| CAN ID    | `0x4C1` (Grp3_GPS_Pos)                        |
 | DLC       | 8 bytes                                       |
 | Period    | On fix update (~1 Hz), only when fix is valid |
 | Bytes 0-3 | Latitude - `physical = raw * 0.000001`        |
 | Bytes 4-7 | Longitude - `physical = raw * 0.000001`       |
 
-DBC definition: [`apps/DBC_TarefaB.dbc`](apps/DBC_TarefaB.dbc)  
-Cangaroo workspace: [`apps/CAN.cangaroo`](apps/CAN.cangaroo)
+### GPS Metadata frame
+
+| Field     | Value                                                |
+| --------- | ---------------------------------------------------- |
+| CAN ID    | `0x4C2` (Grp3_GPS_Meta)                              |
+| DLC       | 5 bytes                                              |
+| Period    | On every GPS sensor update                           |
+| Byte 0    | Hours                                                |
+| Byte 1    | Minutes                                              |
+| Byte 2    | Seconds                                              |
+| Byte 3    | Number of satellites in use                          |
+| Byte 4    | Fix quality (0 = invalid, 1 = valid)                 |
 
 ## Pins used:
 
-### Led
+### LED
 
 - P2.3
 - GND
@@ -104,7 +140,7 @@ The following devices share the same bus and can be connected in parallel:
 - **AHT10** temperature and humidity sensor
 - **LCD** 16x2 display
 
-Power each device independently (5 V / GND).
+Power each device independently (3.3 V / GND).
 
 ### GPS
 
@@ -113,41 +149,14 @@ Power each device independently (5 V / GND).
 - P2.14 TX → GPS RX
 - P2.15 RX ← GPS TX
 
-### Other connections:
+> [!NOTE]
+>
+> GPS Demo video:
+> 
+> [![GPS Showcase (required by the course)](https://img.youtube.com/vi/syspT1jqHqc/default.jpg)](https://www.youtube.com/shorts/syspT1jqHqc)
 
-#### CANBUS USB transceiver
+## Other connections:
 
-- DE-9
+### CANBUS USB transceiver
 
-## Documentation
-
-- [Technical Report](docs/report/technical_report.pdf)
-
-## Software used:
-
-### Development
-
-- [DAVE IDE (Infineon Technologies)](https://www.infineon.com/design-resources/development-tools/sdk/dave)
-
-### UART
-
-- [Docklight](apps/docklight.ptp)
-
-### Variables Watcher
-
-- [Micrium](apps/micrium.wspx)
-
-### CAN
-
-- [Cangaroo](apps/CAN.cangaroo)
-  - uses [DBC file](apps/DBC_TarefaB.dbc)
-
-### KiCad
-
-- Project: [`apps/kicad/`](apps/kicad/)
-  - relevant links: [Rules and Guidelines for Drawing Good Schematics](https://electronics.stackexchange.com/questions/28251/rules-and-guidelines-for-drawing-good-schematics)
-  - relevant files/folders: [`.kicad_sch`](apps/kicad/kicad.kicad_sch), [`.kicad_sym`](apps/kicad/kicad.kicad_sym), [`apps/kicad/output/README.md`](apps/kicad/output/README.md)
-
-## Schematic
-
-![Schematic](apps/kicad/output/kicad_fit_content.svg)
+- DE-9 (also known as DB9) connector
