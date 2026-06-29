@@ -24,7 +24,7 @@
 							<option id="com.ifx.xmc4000.option.target.fpu.320612982" name="Fpu (-mfpu)" superClass="com.ifx.xmc4000.option.target.fpu" value="org.eclipse.cdt.cross.arm.gnu.base.option.mfpu.fpv4-sp-d16" valueType="enumerated"/>
 							<option id="com.ifx.xmc4000.option.targetName.633543583" name="Target Name" superClass="com.ifx.xmc4000.option.targetName" value="XMC4200-F64x256" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="com.ifx.xmc4000.targetPlatform.1007022274" isAbstract="false" name="Windows Platform" osList="win32" superClass="com.ifx.xmc4000.targetPlatform"/>
-							<builder buildPath="${workspace_loc:/tarefa_a}/Release" id="com.ifx.XMC4000.toolchainBuilder.860888442" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="XMC Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ifx.XMC4000.toolchainBuilder"/>
+							<builder buildPath="${workspace_loc:/Final}/Release" id="com.ifx.XMC4000.toolchainBuilder.860888442" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="XMC Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ifx.XMC4000.toolchainBuilder"/>
 							<tool id="com.ifx.xmc4000.appRelease.compiler.1320326103" name="ARM-GCC C Compiler" superClass="com.ifx.xmc4000.appRelease.compiler">
 								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level.1864571259" name="Optimization level" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.base.option.optimization.level.size" valueType="enumerated"/>
 								<option id="com.ifx.xmc4000.compiler.option.misc.mfloat.1437841899" name="Floating point" superClass="com.ifx.xmc4000.compiler.option.misc.mfloat" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.base.option.other.mfloat.softfp" valueType="enumerated"/>
@@ -115,7 +115,7 @@
 							<option id="com.ifx.xmc4000.option.target.fpu.437655090" name="Fpu (-mfpu)" superClass="com.ifx.xmc4000.option.target.fpu" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.base.option.mfpu.fpv4-sp-d16" valueType="enumerated"/>
 							<option id="com.ifx.xmc4000.option.targetName.294050005" name="Target Name" superClass="com.ifx.xmc4000.option.targetName" useByScannerDiscovery="false" value="XMC4200-F64x256" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="com.ifx.xmc4000.targetPlatform.2121067532" isAbstract="false" name="Windows Platform" osList="win32" superClass="com.ifx.xmc4000.targetPlatform"/>
-							<builder buildPath="${workspace_loc:/tarefa_a}/Debug" id="com.ifx.XMC4000.toolchainBuilder.1261155652" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="XMC Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ifx.XMC4000.toolchainBuilder"/>
+							<builder buildPath="${workspace_loc:/Final}/Debug" id="com.ifx.XMC4000.toolchainBuilder.1261155652" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="XMC Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ifx.XMC4000.toolchainBuilder"/>
 							<tool id="com.ifx.xmc4000.appDebug.compiler.763452928" name="ARM-GCC C Compiler" superClass="com.ifx.xmc4000.appDebug.compiler">
 								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level.566139158" name="Optimization level" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false"/>
 								<option id="com.ifx.xmc4000.compiler.option.misc.mfloat.522001244" name="Floating point" superClass="com.ifx.xmc4000.compiler.option.misc.mfloat" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.base.option.other.mfloat.softfp" valueType="enumerated"/>
@@ -188,7 +188,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="tarefa_a.com.ifx.xmc4000.appProject.848142457" name="ARM-GCC Application" projectType="com.ifx.xmc4000.appProject"/>
+		<project id="Final.com.ifx.xmc4000.appProject.848142457" name="ARM-GCC Application" projectType="com.ifx.xmc4000.appProject"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
@@ -211,10 +211,10 @@
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Release">
-			<resource resourceType="PROJECT" workspacePath="/tarefa_a"/>
+			<resource resourceType="PROJECT" workspacePath="/Final"/>
 		</configuration>
 		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/tarefa_a"/>
+			<resource resourceType="PROJECT" workspacePath="/Final"/>
 		</configuration>
 	</storageModule>
 </cproject>

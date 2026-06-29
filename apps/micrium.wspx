@@ -2,7 +2,7 @@
 <workspace>
   <symbolbrowser>
     <symbolfiles>
-      <symbolfile Filepath="..\..\Debug\tarefa_a.elf" ExternallyAdded="false" Core_Identifier="Core0" Device_Identifier="Device0" FileType="ELF_File" />
+      <symbolfile Filepath="..\..\Debug\Final.elf" ExternallyAdded="false" Core_Identifier="Core0" Device_Identifier="Device0" FileType="ELF_File" />
     </symbolfiles>
   </symbolbrowser>
   <screens SelectedScreenId="DataScreen2">
